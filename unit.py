@@ -2,9 +2,9 @@ import pandas as pd
 import re
 import os
 from datetime import datetime
-from rules import *
+from rules import check_missing_rows, DataQualityRule
 from channels import block_3_stack_channels, block_3_walkout_channels, block_1_stack_channels, block_1_walkout_channels
-
+from log import Log
 
 class Unit:
     block_1 = [2804, 2806, 2808, 2810, 2812, 2814, 2816, 2818]
@@ -45,6 +45,8 @@ class Unit:
         '''
         if df.iloc[0, 0] > df.iloc[1, 0]:
             return df.iloc[::-1]
+        else:
+            return df
 
     def _natural_sort_key(self, s):
         return [int(text) if text.isdigit() else text.lower() for text in re.split('(\\d+)', s)]
@@ -83,15 +85,11 @@ class Unit:
         url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportMonthly/{self.serial}/{current_date}'
         self.data = pd.read_csv(url, header=0)
     
-    def check_quality(self, rules: list[DataQualityRule]):
+    def check_quality(self):
         '''
         Check the quality of the data using the rules provided
 
         param: rules: list[DataQualityRule]: list of rules to be applied
-        return: list[str]: list of rules that failed
+        return: None
         '''
-        failed_rules = []
-        for rule in rules:
-            if not rule.apply(self.data):
-                failed_rules.append(rule.name)
-        return failed_rules
+        self.data = check_missing_rows(self.data, self.unit_no)
