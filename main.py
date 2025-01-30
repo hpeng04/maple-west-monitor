@@ -5,7 +5,6 @@ import pandas as pd
 import re
 import os
 from unit import Unit
-import color
 
 def load_units(config_path: str) -> list[Unit]:
     '''
@@ -27,6 +26,7 @@ def main():
     units = load_units('config.csv')
     units[0].load_data('Data')
     print(units[0].data)
+    units[0].check_quality()
     # for unit in units:
     #     print(unit)
     #     try:
