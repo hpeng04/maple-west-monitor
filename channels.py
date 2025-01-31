@@ -23,8 +23,8 @@ block_3_stack_channels = { # (min, max, column_name)
     "Hot Water Avg C": (0.0001, 65, "Hot.*Water.*Avg.*C"),
     "Cold Water Avg C": (0.0001, 25, "Cold.*Water.*Avg.*C"),
     "Heat Recovery Water Avg C": (0.0001, 50, "Heat.*Recovery.*Water.*Avg.*C"),
-    "Cold Water Cubic Meter": (0, 3, "Cold.*Water.*Cubic.*Meter$"),
-    "Hot Water Cubic Meter": (0, 3, "Hot.*Water.*Cubic.*Meter$"),
+    "Cold Water Cubic Meter": (0, 25, "Cold.*Water.*Cubic.*Meter$"),
+    "Hot Water Cubic Meter": (0, 25, "Hot.*Water.*Cubic.*Meter$"),
     "Main Electricity Gen Watts": (-1500, 10000, "Main.*Electricity.*Gen.*Watts$"),
     "Main Electricity Gen Watts 1": (-1500, 10000, "Main.*Electricity.*Gen.*Watts.*1$")
 }
@@ -52,9 +52,9 @@ block_3_walkout_channels = { # (min, max, column_name)
     "Hot Water Avg C": (0.0001, 65, "Hot.*Water.*Avg.*C$"),
     "Return Air Avg C": (0, 35, "Return.*Air.*Avg.*C$"),
     "Cold Water Avg C": (0.0001, 25, "Cold.*Water.*Avg.*C$"),
-    "Cold Water Cubic Meter": (0, 3, "Cold.*Water.*Cubic.*Meter$"),
-    "Hot Water Cubic Meter": (0, 3, "Hot.*Water.*Cubic.*Meter$"),
-    "Natural Gas": (0, 5, "Natural.*Gas"),
+    "Cold Water Cubic Meter": (0, 25, "Cold.*Water.*Cubic.*Meter$"),
+    "Hot Water Cubic Meter": (0, 25, "Hot.*Water.*Cubic.*Meter$"),
+    "Natural Gas": (0, 25, "Natural.*Gas"),
     "Main Electricity Gen Watts": (-1500, 10000, "Main.*Electricity.*Gen.*Watts$"),
     "Main Electricity Gen Watts 1": (-1500, 10000, "Main.*Electricity.*Gen.*(Watts.*1)$")
 }
@@ -81,8 +81,8 @@ block_1_stack_channels = { # (min, max, column_name)
     "Volts": (60, 180, "Volts"),
     "Hot Water Avg C": (0.0001, 65, "Hot.*Water.*Avg.*C$"),
     "Cold Water Avg C": (0.0001, 25, "Cold.*Water.*Avg.*C$"),
-    "Hot Water Cubic Meter": (0, 3, "Hot.*Water.*Cubic.*Meter$"),
-    "Cold Water Cubic Meter": (0, 3, "Cold.*Water.*Cubic.*Meter$")
+    "Hot Water Cubic Meter": (0, 25, "Hot.*Water.*Cubic.*Meter$"),
+    "Cold Water Cubic Meter": (0, 25, "Cold.*Water.*Cubic.*Meter$")
 }
 
 block_1_walkout_channels = { # (min, max, column_name)
@@ -105,7 +105,7 @@ block_1_walkout_channels = { # (min, max, column_name)
     "Cold Water Avg C": (0.0001, 25, "Cold.*Water.*Avg.*C$"),
     "Hot Water Avg C": (0.0001, 65, "Hot.*Water.*Avg.*C$"),
     "Return Air Avg C": (0, 35, "Return Air"),
-    "Cold Water Meter": (0, 3, "Cold.*Water.*Meter$"),
-    "Hot Water Meter": (0, 3, "Hot.*Water.*Meter$"),
-    "Natural Gas": (0, 5, "Natural Gas")
+    "Cold Water Cubic Meter": (0, 25, "Cold.*Water.*Meter$"),
+    "Hot Water Cubic Meter": (0, 25, "Hot.*Water.*Meter$"),
+    "Natural Gas": (0, 25, "Natural Gas")
 }
