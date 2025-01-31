@@ -22,7 +22,17 @@ def load_units(config_path: str) -> list[Unit]:
             units.append(unit)
     return units
 
+def delete_log():
+    '''
+    Delete the log file
+    '''
+    try:
+        os.remove('log.txt')
+    except FileNotFoundError:
+        pass
+
 def main():
+    delete_log()
     units = load_units('config.csv')
     units[0].load_data('Data')
     print(units[0].data)
