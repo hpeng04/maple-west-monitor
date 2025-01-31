@@ -3,7 +3,7 @@ from log import Log
 import pandas as pd
 from color import color
 
-def increase_time(time: str, minutes: int = 1) -> str:
+def increment_time(time: str, minutes: int = 1) -> str:
     time_format = "%Y-%m-%d %H:%M:%S"
     time_obj = datetime.strptime(time, time_format)
     new_time_obj = time_obj + timedelta(minutes=minutes)
@@ -31,6 +31,8 @@ def find_time_step(initial_time: str, second_time: str, unit_no) -> int:
     return time_step
 
 def check_missing_rows(df, unit_no) -> pd.DataFrame:
+    errors = []
+
     first_row = df.iloc[0]
     num_columns = len(first_row)
 
@@ -46,7 +48,7 @@ def check_missing_rows(df, unit_no) -> pd.DataFrame:
 
     while current_time != final_time:
 
-        expected_time = increase_time(expected_time, time_step)
+        expected_time = increment_time(expected_time, time_step)
         index += 1
         current_time = df.iloc[index, 0]
 
@@ -59,16 +61,19 @@ def check_missing_rows(df, unit_no) -> pd.DataFrame:
             if current_time_obj < expected_time_obj:
                 Log.write(f'Unit {unit_no}: Data order error at index {index}')
                 print(f"{color.RED}Unit {unit_no}: Data order error at index {index}{color.END}")
+                errors.append(f"Unit {unit_no}: Data order error at index {index}")
                 expected_time = str(current_time)
                 break
 
-            Log.write(f'Unit {unit_no}: Missing row data at {expected_time}')
+            Log.write(f'Unit {unit_no}: Missing data row at {expected_time}')
+            print(f"{color.RED}Unit {unit_no}: Missing data row at {expected_time}{color.END}")
+            errors.append(f"Unit {unit_no}: Missing data row at {expected_time}")
             missing_row = [expected_time] + [""] * (num_columns - 1)
             df = pd.concat([df.iloc[:index], pd.DataFrame([missing_row], columns=df.columns), df.iloc[index:]]).reset_index(drop=True)
-            expected_time = increase_time(expected_time, time_step)
+            expected_time = increment_time(expected_time, time_step)
             index += 1  # Adjust index to account for the inserted row
 
-    return df
+    return df, errors
 
 class DataQualityRule:
     def __init__(self, name: str, check_function):

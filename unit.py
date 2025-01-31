@@ -5,6 +5,7 @@ from datetime import datetime
 from rules import check_missing_rows, DataQualityRule
 from channels import block_3_stack_channels, block_3_walkout_channels, block_1_stack_channels, block_1_walkout_channels
 from log import Log
+from alert import send_email
 
 class Unit:
     block_1 = [2804, 2806, 2808, 2810, 2812, 2814, 2816, 2818]
@@ -85,6 +86,18 @@ class Unit:
         url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportMonthly/{self.serial}/{current_date}'
         self.data = pd.read_csv(url, header=0)
     
+    def _compile_email_body(self, errors):
+        '''
+        Compile the email body from the list of errors
+
+        param: errors: list[str]: list of errors
+        return: str: email body
+        '''
+        body = f"Unit {self.unit_no} - Error(s) Detected:\n"
+        for error in errors:
+            body += f"{error}\n"
+        return body
+
     def check_quality(self):
         '''
         Check the quality of the data using the rules provided
@@ -92,4 +105,9 @@ class Unit:
         param: rules: list[DataQualityRule]: list of rules to be applied
         return: None
         '''
-        self.data = check_missing_rows(self.data, self.unit_no)
+        self.data, errors = check_missing_rows(self.data, self.unit_no)
+        # if error len > 0, then send email and log to the user
+        if len(errors) > 0:
+            body = self._compile_email_body(errors)
+            send_email(subject=f"Unit {self.unit_no} - Error(s) Detected", body=body, attachment='log.txt', to=['hhpeng@ualberta.ca'])
+            
