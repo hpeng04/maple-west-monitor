@@ -19,10 +19,18 @@ def find_time_step(initial_time: str, second_time: str, unit_no) -> int:
 
     if time_step == 1:
         Log.write(f'Unit {unit_no}: Minute data detected')
-        print(f"{color.GREEN}Unit {unit_no}: Minute data detected{color.END}")
+        print(f"Unit {unit_no}: Minute data detected")
     elif time_step == 60:
         Log.write(f'Unit {unit_no}: Hourly data detected')
-        print(f"{color.GREEN}Unit {unit_no}: Hourly data detected{color.END}")
+        print(f"Unit {unit_no}: Hourly data detected")
+    elif time_step == -1:
+        Log.write(f'Unit {unit_no}: Data order is reversed, Minute data detected')
+        print(f"{color.YELLOW}Unit {unit_no}: Data order is reversed, Minute data detected{color.END}")
+        time_step = -1
+    elif time_step == -60:
+        Log.write(f'Unit {unit_no}: Data order is reversed, Hourly data detected')
+        print(f"{color.YELLOW}Unit {unit_no}: Data order is reversed, Hourly data detected{color.END}")
+        time_step = -60
     else:
         Log.write(f'Unit {unit_no}: Time step could not be determined')
         print(f"{color.YELLOW}Unit {unit_no}: Time step could not be determined{color.END}")
@@ -65,9 +73,9 @@ def check_missing_rows(df, unit_no) -> pd.DataFrame:
                 expected_time = str(current_time)
                 break
 
-            Log.write(f'Unit {unit_no}: Missing data row at {expected_time}')
-            print(f"{color.RED}Unit {unit_no}: Missing data row at {expected_time}{color.END}")
-            errors.append(f"Unit {unit_no}: Missing data row at {expected_time}")
+            Log.write(f'Unit {unit_no}: Missing all data at {expected_time}')
+            print(f"{color.RED}Unit {unit_no}: Missing all data at {expected_time}{color.END}")
+            errors.append(f"Unit {unit_no}: Missing all data at {expected_time}")
             missing_row = [expected_time] + [""] * (num_columns - 1)
             df = pd.concat([df.iloc[:index], pd.DataFrame([missing_row], columns=df.columns), df.iloc[index:]]).reset_index(drop=True)
             expected_time = increment_time(expected_time, time_step)
