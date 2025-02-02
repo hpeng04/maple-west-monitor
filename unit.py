@@ -3,9 +3,9 @@ import re
 import os
 from datetime import datetime
 from rules import check_missing_rows, DataQualityRule
-from channels import block_3_stack_channels, block_3_walkout_channels, block_1_stack_channels, block_1_walkout_channels
+from channels import channels
 from log import Log
-from alert import send_email
+from color import color
 
 class Unit:
     block_1 = [2804, 2806, 2808, 2810, 2812, 2814, 2816, 2818]
@@ -13,23 +13,14 @@ class Unit:
 
     stack_units = [2818, 2820, 87, 77, 86, 78]
 
-    def __init__(self, unit_no: int, block: int, ip_address: str, port: str, serial:str, data:pd.DataFrame = None):
+    def __init__(self, unit_no: int, block: int, ip_address: str, port: str, serial:str, channels:dict, data:pd.DataFrame = None):
         self.unit_no = unit_no
-        self.block = block
+        self.block = block # Deprecated
         self.data = data
         self.ip_address = ip_address
         self.port = port
         self.serial = serial
-        if unit_no not in self.stack_units:
-            if block == 1:
-                self.channels = block_1_walkout_channels
-            elif block == 3:
-                self.channels = block_3_walkout_channels
-        else:
-            if block == 1:
-                self.channels = block_1_stack_channels
-            elif block == 3:
-                self.channels = block_3_stack_channels
+        self.channels = channels
                 
     def __str__(self):
         return f"Unit {self.unit_no}, block{self.block}"
@@ -67,6 +58,14 @@ class Unit:
         else:
             self.data = self._fix_order(pd.read_csv(path))
     
+    def _download(self, url:str):
+        '''
+        Download data from the given url
+
+        param: url: str: url to download data from
+        '''
+        self.data = self._fix_order(pd.read_csv(url, header=0, on_bad_lines='skip'))
+
     def download_minute_data(self):
         '''
         Download data for the last day (minute data)
@@ -74,8 +73,7 @@ class Unit:
         current_date = datetime.now().strftime('%Y-%m-%d') # gets date in YYYY-MM-DD format as a str
         # year, month, day = map(int, current_date.split('-')) # converts date to ints
         url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportDaily/{self.serial}/{current_date}'
-        print(url)
-        self.data = pd.read_csv(url, header=0)
+        self._download(url)
 
     def download_hourly_data(self):
         '''
@@ -84,19 +82,7 @@ class Unit:
         current_date = datetime.now().strftime('%Y-%m') # gets date in YYYY-MM format as a str
         year, month, _ = map(int, current_date.split('-')) # converts date to ints
         url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportMonthly/{self.serial}/{current_date}'
-        self.data = pd.read_csv(url, header=0)
-    
-    def _compile_email_body(self, errors):
-        '''
-        Compile the email body from the list of errors
-
-        param: errors: list[str]: list of errors
-        return: str: email body
-        '''
-        body = f"Unit {self.unit_no} - Error(s) Detected:\n"
-        for error in errors:
-            body += f"{error}\n"
-        return body
+        self._download(url)
 
     def check_quality(self):
         '''
@@ -106,8 +92,13 @@ class Unit:
         return: None
         '''
         self.data, errors = check_missing_rows(self.data, self.unit_no)
-        # if error len > 0, then send email and log to the user
-        if len(errors) > 0:
-            body = self._compile_email_body(errors)
-            send_email(subject=f"Unit {self.unit_no} - Error(s) Detected", body=body, attachment='log.txt', to=['hhpeng@ualberta.ca'])
+        for channel in self.channels:
+            if channel == True:
+                # use the channel check quality function
+                pass
             
+        if len(errors) == 0:
+            print(f"{color.GREEN}Unit {self.unit_no} passed all quality checks{color.END}")
+            Log.write(f"Unit {self.unit_no}: Passed all quality checks")
+        Log.write("\n")
+        return errors
