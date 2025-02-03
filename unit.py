@@ -2,7 +2,7 @@ import pandas as pd
 import re
 import os
 from datetime import datetime
-from rules import check_missing_rows, DataQualityRule
+from rules import check_missing_rows
 from channels import channels
 from log import Log
 from color import color
@@ -95,10 +95,11 @@ class Unit:
         for channel in self.channels:
             if channel == True:
                 # use the channel check quality function
-                pass
-            
+                errors += channels[channel].check(self.data, self.unit_no)
+                  
         if len(errors) == 0:
             print(f"{color.GREEN}Unit {self.unit_no} passed all quality checks{color.END}")
             Log.write(f"Unit {self.unit_no}: Passed all quality checks")
+
         Log.write("\n")
         return errors
