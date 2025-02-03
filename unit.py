@@ -70,9 +70,9 @@ class Unit:
         '''
         Download data for the last day (minute data)
         '''
-        current_date = datetime.now().strftime('%Y-%m-%d') # gets date in YYYY-MM-DD format as a str
+        yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d') # gets date in YYYY-MM-DD format as a str
         # year, month, day = map(int, current_date.split('-')) # converts date to ints
-        url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportDaily/{self.serial}/{current_date}'
+        url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportDaily/{self.serial}/{yesterday}'
         self._download(url)
 
     def download_hourly_data(self):
