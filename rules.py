@@ -38,7 +38,7 @@ def find_time_step(initial_time: str, second_time: str, unit_no) -> int:
     
     return time_step
 
-def check_missing_rows(df, unit_no) -> pd.DataFrame:
+def check_missing_rows(df: pd.DataFrame, unit_no) -> pd.DataFrame:
     errors = []
 
     first_row = df.iloc[0]
@@ -83,10 +83,27 @@ def check_missing_rows(df, unit_no) -> pd.DataFrame:
 
     return df, errors
 
-class DataQualityRule:
-    def __init__(self, name: str, check_function):
-        self.name = name
-        self.check_function = check_function
-  
-    def apply(self, data):
-        return self.check_function(data)
+
+def check_limits(regex, data, min_value, max_value, unit_no):
+    errors = []
+    column = data.filter(regex=regex).columns[0]
+    if column:
+        values = data[column]
+        for index, value in values.iteritems():
+            if value < min_value or value > max_value:
+                print(f"{color.RED}Unit {unit_no}: Value out of limits: Index {index}, Value {value}, Limits ({min_value}, {max_value}){color.END}")
+                Log.write(f"Unit {unit_no}: Value out of limits: Index {index}, Value {value}, Limits ({min_value}, {max_value})")
+                errors.append(f"Unit {unit_no}: Value out of limits: Index {index}, Value {value}, Limits ({min_value}, {max_value})")
+        return column, errors
+    else:
+        print(f"{color.RED}Unit {unit_no}: Column not found: {regex}{color.END}")
+        Log.write(f"Unit {unit_no}: Column not found: {regex}")
+        errors.append(f"Unit {unit_no}: Column not found: {regex}")
+        return None, errors
+
+def check_temperature(regex, data, min_value, max_value, unit_no):
+    column, errors = check_limits(regex, data, min_value+0.01, max_value, unit_no)
+    if not column:
+        return errors
+    # values = data[column]
+    return errors
