@@ -40,6 +40,7 @@ def find_time_step(initial_time: str, second_time: str, unit_no) -> int:
 
 def check_missing_rows(df: pd.DataFrame, unit_no) -> pd.DataFrame:
     errors = []
+    bad_indices = []
 
     first_row = df.iloc[0]
     num_columns = len(first_row)
@@ -70,40 +71,49 @@ def check_missing_rows(df: pd.DataFrame, unit_no) -> pd.DataFrame:
                 Log.write(f'Unit {unit_no}: Data order error at index {index}')
                 print(f"{color.RED}Unit {unit_no}: Data order error at index {index}{color.END}")
                 errors.append(f"Unit {unit_no}: Data order error at index {index}")
+                bad_indices.append(index)
                 expected_time = str(current_time)
                 break
 
             Log.write(f'Unit {unit_no}: Missing all data at {expected_time}')
             print(f"{color.RED}Unit {unit_no}: Missing all data at {expected_time}{color.END}")
             errors.append(f"Unit {unit_no}: Missing all data at {expected_time}")
+            bad_indices.append(index)
             missing_row = [expected_time] + [""] * (num_columns - 1)
             df = pd.concat([df.iloc[:index], pd.DataFrame([missing_row], columns=df.columns), df.iloc[index:]]).reset_index(drop=True)
             expected_time = increment_time(expected_time, time_step)
             index += 1  # Adjust index to account for the inserted row
 
-    return df, errors
+    return df, errors, bad_indices
 
 
-def check_limits(regex, data, min_value, max_value, unit_no):
+def check_limits(regex, data, min_value, max_value, unit_no, bad_indices):
     errors = []
-    column = data.filter(regex=regex).columns[0]
-    if column:
+    try:
+        column = data.filter(regex=regex).columns[0]
         values = data[column]
-        for index, value in values.iteritems():
-            if value < min_value or value > max_value:
-                print(f"{color.RED}Unit {unit_no}: Value out of limits: Index {index}, Value {value}, Limits ({min_value}, {max_value}){color.END}")
+        for index, value in values.items():
+            if index in bad_indices:
+                continue
+            if value == "":  # Skip empty values
+                print(f"{color.YELLOW}Unit {unit_no}: Missing data at index {index}, in {column}{color.END}")
+                Log.write(f"Unit {unit_no}: Missing data at index {index}, in {column}")
+                errors.append(f"Unit {unit_no}: Missing data at index {index}, in {column}")
+            elif int(value) < min_value or int(value) > max_value:
+                print(f"{color.YELLOW}Unit {unit_no}: Value out of limits: Index {index}, Value {value}, Limits ({min_value}, {max_value}){color.END}")
                 Log.write(f"Unit {unit_no}: Value out of limits: Index {index}, Value {value}, Limits ({min_value}, {max_value})")
                 errors.append(f"Unit {unit_no}: Value out of limits: Index {index}, Value {value}, Limits ({min_value}, {max_value})")
-        return column, errors
-    else:
+        return errors
+    except:
         print(f"{color.RED}Unit {unit_no}: Column not found: {regex}{color.END}")
         Log.write(f"Unit {unit_no}: Column not found: {regex}")
         errors.append(f"Unit {unit_no}: Column not found: {regex}")
-        return None, errors
-
-def check_temperature(regex, data, min_value, max_value, unit_no):
-    column, errors = check_limits(regex, data, min_value+0.01, max_value, unit_no)
-    if not column:
         return errors
+
+def check_temperature(regex, data, min_value, max_value, unit_no, bad_indices):
+    errors = check_limits(regex, data, min_value+0.01, max_value, unit_no, bad_indices)
+    if f"Unit {unit_no}: Column not found: {regex}" in errors:
+        return errors
+    # column = data.filter(regex=regex).columns[0]
     # values = data[column]
     return errors

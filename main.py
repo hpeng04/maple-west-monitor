@@ -100,6 +100,7 @@ def main():
     #     print(unit.data)
 
 if __name__ == "__main__":
-    test_download_units()
+    test_load_unit()
+    # test_download_units()
 
 

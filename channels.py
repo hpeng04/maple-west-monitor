@@ -14,11 +14,11 @@ class Channel:
     def __repr__(self):
         return f"Channel {self.name}, {self.min_value}-{self.max_value}, {self.regex}\n"
     
-    def check(self, data, unit_no):
+    def check(self, data, unit_no, bad_indices):
+        errors = []
         if self.check_func:
-            self.check_func(self.regex, data, self.min_value, self.max_value, unit_no)
-        else:
-            pass
+            errors = self.check_func(self.regex, data, self.min_value, self.max_value, unit_no, bad_indices)
+        return errors
 
 channels = {
     "A/C Watts": Channel("A/C Watts", 0, 3000, "A/C Watts$", check_limits),

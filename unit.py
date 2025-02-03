@@ -91,11 +91,13 @@ class Unit:
         param: rules: list[DataQualityRule]: list of rules to be applied
         return: None
         '''
-        self.data, errors = check_missing_rows(self.data, self.unit_no)
+        errors = []
+        self.data, missing_row_errors, bad_indices = check_missing_rows(self.data, self.unit_no)
+        errors += missing_row_errors
         for channel in self.channels:
-            if channel == True:
+            if self.channels[channel] == True:
                 # use the channel check quality function
-                errors += channels[channel].check(self.data, self.unit_no)
+                errors += channels[channel].check(self.data, self.unit_no, bad_indices)
                   
         if len(errors) == 0:
             print(f"{color.GREEN}Unit {self.unit_no} passed all quality checks{color.END}")
