@@ -56,7 +56,7 @@ channels = {
     "Washing Machine Watts": Channel("Washing Machine Watts", 0, 1000, "Washing.*Machine.*Watts$", check_limits),
     "Return Air Avg C": Channel("Return Air Avg C", 0, 35, "Return.*Air.*Avg.*C$", check_temperature),
     "Cold Water Avg C": Channel("Cold Water Avg C", 0.0001, 25, "Cold.*Water.*Avg.*C$", check_temperature),
-    "Heat Recovery Water Avg C": Channel("Heat Recovery Water Avg C", 0, 35, "Heat.*Recovery.*Water.*Avg.*C$", check_temperature),
+    "Heat Recovery Water Avg C": Channel("Heat Recovery Water Avg C", 0, 35, "Heat.*C$", check_temperature),
     "Hot Water Avg C": Channel("Hot Water Avg C", 0.0001, 65, "Hot.*Water.*Avg.*C$", check_temperature),
     "Volts": Channel("Volts", 60, 180, "Volts", check_limits),
     "Cold Water Cubic Meter": Channel("Cold Water Cubic Meter", 0, 25, "Cold.*Water.*Cubic.*Meter$", check_limits),

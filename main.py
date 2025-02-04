@@ -8,6 +8,7 @@ from unit import Unit
 from alert import send_email
 from log import Log
 import json
+import datetime
 
 # Deprecated function that loads config.csv
 # def load_units(config_path: str) -> list[Unit]:
@@ -63,20 +64,26 @@ def compile_email_body(errors):
         body += f"{error}\n"
     return body
 
-def test_load_unit():
+def run_load_unit():
     delete_log()
     errors = []
     units = load_units('config/')
-    units[0].load_data('Data')
-    print(units[0].data)
-    errors += units[0].check_quality()
-    # if error len > 0, then send email and log to the user
+    for unit in units:
+        if not (unit.load_data('Data')): # True if data is loaded successfully
+            continue
+        unit_error = unit.check_quality() 
+        if unit_error is None: # None if df is empty or data is not loaded
+            continue
+        errors += unit_error
+        # if error len > 0, then send email and log to the user
     if len(errors) > 0:
         body = compile_email_body(errors)
         send_email(subject=f"Maple West Data Error(s) Detected", body=body, attachment='log.txt', to=['hhpeng@ualberta.ca'])
 
-def test_download_units():
+def run_download_units(email_to: list[str] = ['hhpeng@ualberta.ca']):
     delete_log()
+    yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+    Log.write(f"{yesterday.strftime('%Y-%m-%d')}\n")
     errors = []
     units = load_units('config/')
     for unit in units:
@@ -85,10 +92,10 @@ def test_download_units():
     # if error len > 0, then send email and log to the user
     if len(errors) > 0:
         body = compile_email_body(errors)
-        send_email(subject=f"Maple West Data Error(s) Detected", body=body, attachment='log.txt', to=['hhpeng@ualberta.ca'])
+        send_email(subject=f"Maple West Data Error(s) Detected", body=body, attachment='log.txt', to=email_to)
 
 def main():
-    pass
+    run_download_units(['hhpeng@ualberta.ca', 'by1@ualberta.ca'])
 
     # for unit in units:
     #     print(unit)
@@ -100,7 +107,7 @@ def main():
     #     print(unit.data)
 
 if __name__ == "__main__":
-    # test_load_unit()
-    test_download_units()
+    main()
+    # run_download_units()
 
 

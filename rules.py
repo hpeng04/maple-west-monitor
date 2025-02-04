@@ -3,20 +3,24 @@ from log import Log
 import pandas as pd
 from color import color
 
+# Function to increment a given time string by a specified number of minutes
 def increment_time(time: str, minutes: int = 1) -> str:
     time_format = "%Y-%m-%d %H:%M:%S"
     time_obj = datetime.strptime(time, time_format)
     new_time_obj = time_obj + timedelta(minutes=minutes)
     return str(new_time_obj.strftime(time_format))
 
+# Function to find the time step between two time strings and log the type of data (minute or hourly)
 def find_time_step(initial_time: str, second_time: str, unit_no) -> int:
     time_format = "%Y-%m-%d %H:%M:%S"
     initial_time_obj = datetime.strptime(initial_time, time_format)
     second_time_obj = datetime.strptime(second_time, time_format)
     time_diff = second_time_obj - initial_time_obj
     
-    time_step =  int(time_diff.total_seconds() / 60) # Convert to minutes
+    # Convert time difference to minutes
+    time_step = int(time_diff.total_seconds() / 60)
 
+    # Log and print the type of data based on the time step
     if time_step == 1:
         Log.write(f'Unit {unit_no}: Minute data detected')
         print(f"Unit {unit_no}: Minute data detected")
@@ -38,7 +42,10 @@ def find_time_step(initial_time: str, second_time: str, unit_no) -> int:
     
     return time_step
 
+# Function to check for missing rows in a DataFrame and log errors
 def check_missing_rows(df: pd.DataFrame, unit_no) -> pd.DataFrame:
+    if df is None:
+        return None, [], []
     errors = []
     bad_indices = []
 
@@ -56,13 +63,11 @@ def check_missing_rows(df: pd.DataFrame, unit_no) -> pd.DataFrame:
     expected_time = current_time
 
     while current_time != final_time:
-
         expected_time = increment_time(expected_time, time_step)
         index += 1
         current_time = df.iloc[index, 0]
 
-        # print(current_time, expected_time) # Debugging
-
+        # Check for missing rows and log errors
         while current_time != expected_time:
             current_time_obj = datetime.strptime(current_time, "%Y-%m-%d %H:%M:%S")
             expected_time_obj = datetime.strptime(expected_time, "%Y-%m-%d %H:%M:%S")
@@ -86,7 +91,7 @@ def check_missing_rows(df: pd.DataFrame, unit_no) -> pd.DataFrame:
 
     return df, errors, bad_indices
 
-
+# Function to check if values in a DataFrame column are within specified limits and log errors
 def check_limits(regex, data, min_value, max_value, unit_no, bad_indices):
     errors = []
     try:
@@ -95,25 +100,30 @@ def check_limits(regex, data, min_value, max_value, unit_no, bad_indices):
         for index, value in values.items():
             if index in bad_indices:
                 continue
-            if value == "":  # Skip empty values
+            if value == None or pd.isna(value) or value == "":  # Skip empty values
                 print(f"{color.YELLOW}Unit {unit_no}: Missing data at index {index}, in {column}{color.END}")
                 Log.write(f"Unit {unit_no}: Missing data at index {index}, in {column}")
                 errors.append(f"Unit {unit_no}: Missing data at index {index}, in {column}")
-            elif int(value) < min_value or int(value) > max_value:
-                print(f"{color.YELLOW}Unit {unit_no}: Value out of limits: Index {index}, Value {value}, Limits ({min_value}, {max_value}){color.END}")
-                Log.write(f"Unit {unit_no}: Value out of limits: Index {index}, Value {value}, Limits ({min_value}, {max_value})")
-                errors.append(f"Unit {unit_no}: Value out of limits: Index {index}, Value {value}, Limits ({min_value}, {max_value})")
+            elif float(value) < min_value or float(value) > max_value:
+                print(f"{color.YELLOW}Unit {unit_no}: {column} out of limits: Index {index}, Value: {value}, Limits: ({min_value}, {max_value}){color.END}")
+                Log.write(f"Unit {unit_no}: {column} out of limits: Index {index}, Value: {value}, Limits: ({min_value}, {max_value})")
+                errors.append(f"Unit {unit_no}: {column} out of limits: Index {index}, Value: {value}, Limits: ({min_value}, {max_value})")
         return errors
-    except:
+    except IndexError:
         print(f"{color.RED}Unit {unit_no}: Column not found: {regex}{color.END}")
-        Log.write(f"Unit {unit_no}: Column not found: {regex}")
-        errors.append(f"Unit {unit_no}: Column not found: {regex}")
+        Log.write(f"***Unit {unit_no}: Column not found: {regex}")
+        errors.append(f"***Unit {unit_no}: Column not found: {regex}")
         return errors
 
+# Function to check if temperature values in a DataFrame column are within specified limits and log errors
 def check_temperature(regex, data, min_value, max_value, unit_no, bad_indices):
     errors = check_limits(regex, data, min_value+0.01, max_value, unit_no, bad_indices)
     if f"Unit {unit_no}: Column not found: {regex}" in errors:
         return errors
-    # column = data.filter(regex=regex).columns[0]
-    # values = data[column]
+    column = data.filter(regex=regex).columns[0]
+    values = data[column]
+    if sum(values) == 0:
+        print(f"{color.YELLOW}Unit {unit_no}: {column} all zero - Possible disconnection{color.END}")
+        Log.write(f"***Unit {unit_no}: {column} all zero - Possible disconnection")
+        errors.append(f"***Unit {unit_no}: {column} all zero - Possible disconnection")
     return errors

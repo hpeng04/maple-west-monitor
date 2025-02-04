@@ -10,6 +10,7 @@ from color import color
 class Unit:
     block_1 = [2804, 2806, 2808, 2810, 2812, 2814, 2816, 2818]
     block_3 = [77, 78, 79, 80, 81, 82, 83, 84, 85, 86]
+    units = block_1 + block_3
 
     stack_units = [2818, 2820, 87, 77, 86, 78]
 
@@ -51,12 +52,18 @@ class Unit:
         param: path: str: path to the csv file or directory
         '''
         if os.path.isdir(path):
-            all_files = [os.path.join(path, f) for f in os.listdir(path) if (os.path.isfile(os.path.join(path, f)) and f.endswith('.csv'))]
-            all_files.sort(key=self._natural_sort_key)
-            all_files = [self._fix_order(pd.read_csv(f)) for f in all_files]
-            self.data = pd.concat((f for f in all_files), ignore_index=True)
+            for dir_name in os.listdir(path):
+                if dir_name == f'{self.unit_no}':
+                    dir_path = os.path.join(path, dir_name)
+                    all_files = [os.path.join(dir_path, f) for f in os.listdir(dir_path) if (os.path.isfile(os.path.join(dir_path, f)) and f.endswith('.csv'))]
+                    all_files.sort(key=self._natural_sort_key)
+                    all_files = [self._fix_order(pd.read_csv(f)) for f in all_files]
+                    self.data = pd.concat((f for f in all_files), ignore_index=True)
         else:
             self.data = self._fix_order(pd.read_csv(path))
+        if self.data is None:
+            return False
+        return True
     
     def _download(self, url:str):
         '''
@@ -93,6 +100,8 @@ class Unit:
         '''
         errors = []
         self.data, missing_row_errors, bad_indices = check_missing_rows(self.data, self.unit_no)
+        if self.data is None:
+            return None
         errors += missing_row_errors
         for channel in self.channels:
             if self.channels[channel] == True:
