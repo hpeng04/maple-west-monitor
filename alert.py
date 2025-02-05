@@ -3,6 +3,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 import os
+from color import color
 
 # Need to connect to UAlberta VPN or be on UAlberta network to send email.
 # https://universityofalberta.freshservice.com/support/solutions/articles/19000109142
@@ -45,11 +46,11 @@ def send_email(subject:str, body:str, attachment, to:list[str], from_:str = emai
         # Send email
         server.send_message(msg)
         server.quit()
-        print(f"Email sent to {', '.join(to)}")
+        print(f"{color.GREEN}Email sent to {', '.join(to)}{color.END}")
         return True
 
     except Exception as e:
-        print(f"Failed to send email: {str(e)}")
+        print(f"{color.RED}Failed to send email: {str(e)}{color.END}")
         return False
     
 if __name__ == "__main__":
