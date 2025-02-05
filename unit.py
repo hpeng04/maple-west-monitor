@@ -99,6 +99,8 @@ class Unit:
         return: None
         '''
         errors = []
+        Log.write(f"Checking Unit {self.unit_no}: {self.ip_address}:{self.port}")
+        print(f"Checking Unit {self.unit_no}: {self.ip_address}:{self.port}")
         self.data, missing_row_errors, bad_indices = check_missing_rows(self.data, self.unit_no)
         if self.data is None:
             return None
@@ -109,7 +111,7 @@ class Unit:
                 errors += channels[channel].check(self.data, self.unit_no, bad_indices)
                   
         if len(errors) == 0:
-            print(f"{color.GREEN}Unit {self.unit_no} passed all quality checks{color.END}")
+            print(f"{color.GREEN}Unit {self.unit_no}: Passed all quality checks{color.END}")
             Log.write(f"Unit {self.unit_no}: Passed all quality checks")
 
         Log.write("\n")
