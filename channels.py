@@ -1,4 +1,4 @@
-from rules import check_limits, check_temperature
+from rules import check_limits, check_temperature, check_pulse
 
 class Channel:
     def __init__(self, name:str, min_value:float, max_value:float, regex:str, check_func:callable=None):
@@ -43,8 +43,8 @@ channels = {
     "Living Room Plugs Watts": Channel("Living Room Plugs Watts", 0, 3000, "Living.*Room.*Plugs?.*Watts$", check_limits),
     "Main Electricity 1 Watts": Channel("Main Electricity 1 Watts", 0, 10000, "Main.*Electricity.*1.*Watts$", check_limits),
     "Main Electricity 2 Watts": Channel("Main Electricity 2 Watts", 0, 10000, "Main.*Electricity.*2.*Watts$", check_limits),
-    "Main Electricity Gen Watts": Channel("Main Electricity Gen Watts", -1500, 10000, "Main.*Electricity.*Gen.*Watts$", check_limits),
-    "Main Electricity Gen Watts 1": Channel("Main Electricity Gen Watts 1", -1500, 10000, "Main.*Electricity.*Gen.*Watts.*1$", check_limits),
+    "Main Electricity Gen Watts": Channel("Main Electricity Gen Watts", -10000, 10000, "Main.*Electricity.*Gen.*Watts$", check_limits),
+    "Main Electricity Gen Watts 1": Channel("Main Electricity Gen Watts 1", -10000, 10000, "Main.*Electricity.*Gen.*Watts.*1$", check_limits),
     "Main Floor Plugs Watts": Channel("Main Floor Plugs Watts", 0, 3000, "Main.*Floor.*Plugs?.*Watts$", check_limits),
     "Office Room Plugs Watts": Channel("Office Room Plugs Watts", 0, 3000, "Office.*Room.*Plugs?.*Watts$", check_limits),
     "PV Generation 1 Watts": Channel("PV Generation 1 Watts", 0, 1000, "PV.*Generation.*1.*Watts$", check_limits),
@@ -54,12 +54,12 @@ channels = {
     "Second Floor Plugs Watts": Channel("Second Floor Plugs Watts", 0, 3000, "Second.*Floor.*Plugs?.*Watts$", check_limits),
     "Tankless WaterHeater Watts": Channel("Tankless WaterHeater Watts", 0, 250, "Tankless.*WaterHeater.*Watts$", check_limits),
     "Washing Machine Watts": Channel("Washing Machine Watts", 0, 1000, "Washing.*Machine.*Watts$", check_limits),
-    "Return Air Avg C": Channel("Return Air Avg C", 0, 35, "Return.*Air.*Avg.*C$", check_temperature),
-    "Cold Water Avg C": Channel("Cold Water Avg C", 0.0001, 25, "Cold.*Water.*Avg.*C$", check_temperature),
-    "Heat Recovery Water Avg C": Channel("Heat Recovery Water Avg C", 0, 35, "Heat.*C$", check_temperature),
+    "Return Air Avg C": Channel("Return Air Avg C", 0.0001, 35, "Return.*Air.*Avg.*C$", check_temperature),
+    "Cold Water Avg C": Channel("Cold Water Avg C", 0.0001, 27, "Cold.*Water.*Avg.*C$", check_temperature),
+    "Heat Recovery Water Avg C": Channel("Heat Recovery Water Avg C", 0.0001, 45, "Heat.*C$", check_temperature),
     "Hot Water Avg C": Channel("Hot Water Avg C", 0.0001, 65, "Hot.*Water.*Avg.*C$", check_temperature),
     "Volts": Channel("Volts", 60, 180, "Volts", check_limits),
-    "Cold Water Cubic Meter": Channel("Cold Water Cubic Meter", 0, 25, "Cold.*Water.*Cubic.*Meter$", check_limits),
-    "Hot Water Cubic Meter": Channel("Hot Water Cubic Meter", 0, 25, "Hot.*Water.*Cubic.*Meter$", check_limits),
-    "Natural Gas": Channel("Natural Gas", 0, 25, "Natural.*Gas", check_limits)
+    "Cold Water Cubic Meter": Channel("Cold Water Cubic Meter", 0, 25, "Cold.*Water.*Cubic.*Meter$", check_pulse),
+    "Hot Water Cubic Meter": Channel("Hot Water Cubic Meter", 0, 25, "Hot.*Water.*Cubic.*Meter$", check_pulse),
+    "Natural Gas": Channel("Natural Gas", 0, 25, "Natural.*Gas", check_pulse)
 }
