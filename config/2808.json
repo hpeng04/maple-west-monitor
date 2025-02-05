@@ -5,7 +5,7 @@
     "port": 9008,
     "serial": "01021520",
     "channels": {
-        "A/C Watts": true,
+        "A/C Watts": false,
         "AHU Watts": true,
         "Baseboard Heater 1 Watts": false,
         "Baseboard Heater 2 Watts": false,
