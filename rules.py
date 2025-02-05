@@ -5,7 +5,7 @@ from color import color
 
 '''
 Log error format:
-Unit {unit_no} {date}, Index {index}: {error_message}
+Unit {unit_no}: {date}, Index {index}: {error_message}
 '''
 
 # Function to increment a given time string by a specified number of minutes
