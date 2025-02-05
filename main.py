@@ -7,6 +7,7 @@ from alert import send_email
 from log import Log
 import json
 import datetime
+import re
 
 # Deprecated function that loads config.csv
 # def load_units(config_path: str) -> list[Unit]:
@@ -60,12 +61,12 @@ def compile_email_body(errors):
     body = f"Data errors detected in the following unit(s):\n"
     error_units = set()
     for error in errors:
-        error_units.add(error.split(':')[0])
+        error_units.add(re.findall(r'\d+', error.split(':')[0])[0]) # Extract unit number from error message
     for unit in error_units:
-        body += f"{unit}\n"
+        body += f"Unit {unit}\n"
     return body
 
-def run_load_unit():
+def run_load_units():
     delete_log()
     errors = []
     units = load_units('config/')
@@ -109,6 +110,7 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    run_download_units()
+    # run_download_units()
+    run_load_units()
 
 
