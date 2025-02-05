@@ -1,8 +1,6 @@
 TIMEOUT_SEC = 60
 import socket
 socket.setdefaulttimeout(TIMEOUT_SEC)
-import pandas as pd
-import re
 import os
 from unit import Unit
 from alert import send_email
@@ -59,9 +57,12 @@ def compile_email_body(errors):
     param: errors: list[str]: list of errors
     return: str: email body
     '''
-    body = f"Data Error(s) Detected:\n"
+    body = f"Data errors detected in the following unit(s):\n"
+    error_units = set()
     for error in errors:
-        body += f"{error}\n"
+        error_units.add(error.split(':')[0])
+    for unit in error_units:
+        body += f"{unit}\n"
     return body
 
 def run_load_unit():
@@ -107,7 +108,7 @@ def main():
     #     print(unit.data)
 
 if __name__ == "__main__":
-    main()
-    # run_download_units()
+    # main()
+    run_download_units()
 
 
