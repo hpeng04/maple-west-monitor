@@ -41,7 +41,7 @@
         "PV Generation 2 Watts": true,
         "Range (1) Watts": true,
         "Range (2) Watts": true,
-        "Return Air Avg C": true,
+        "Return Air Avg C": false,
         "Second Floor Plugs Watts": true,
         "Tankless WaterHeater Watts": false,
         "Volts": true,
