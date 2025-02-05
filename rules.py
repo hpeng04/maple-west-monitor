@@ -120,10 +120,4 @@ def check_temperature(regex, data, min_value, max_value, unit_no, bad_indices):
     errors = check_limits(regex, data, min_value+0.01, max_value, unit_no, bad_indices)
     if f"Unit {unit_no}: Column not found: {regex}" in errors:
         return errors
-    column = data.filter(regex=regex).columns[0]
-    values = data[column] 
-    # if sum(values) == 0: # ERROR: values not all float, some str
-    #     print(f"{color.YELLOW}Unit {unit_no}: {column} all zero - Possible disconnection{color.END}")
-    #     Log.write(f"***Unit {unit_no}: {column} all zero - Possible disconnection")
-    #     errors.append(f"***Unit {unit_no}: {column} all zero - Possible disconnection")
     return errors
