@@ -2,7 +2,7 @@ import pandas as pd
 import re
 import os
 from datetime import datetime
-from rules import check_missing_rows
+from rules import check_missing_rows, check_total_energy
 from channels import channels
 from log import Log
 from color import color
@@ -99,9 +99,11 @@ class Unit:
         return: None
         '''
         errors = []
+        date = datetime.now().strftime('%Y-%m-%d')
         Log.write(f"Checking Unit {self.unit_no}: {self.ip_address}:{self.port}")
         print(f"Checking Unit {self.unit_no}: {self.ip_address}:{self.port}")
         self.data, missing_row_errors, bad_indices = check_missing_rows(self.data, self.unit_no)
+        errors += check_total_energy(self.data, self.unit_no)
         if self.data is None:
             return None
         errors += missing_row_errors
@@ -114,5 +116,8 @@ class Unit:
             print(f"{color.GREEN}Unit {self.unit_no}: Passed all quality checks{color.END}")
             Log.write(f"Unit {self.unit_no}: Passed all quality checks")
 
+        if not os.path.exists(f'Data/{self.unit_no}'):
+            os.makedirs(f'Data/{self.unit_no}')
+        self.data.to_csv(f'Data/{self.unit_no}/Unit_{self.unit_no}_{date}.csv', index=False)
         Log.write("\n")
         return errors

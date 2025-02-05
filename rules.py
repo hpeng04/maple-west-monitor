@@ -48,29 +48,29 @@ def find_time_step(initial_time: str, second_time: str, unit_no) -> int:
     return time_step
 
 # Function to check for missing rows in a DataFrame and log errors
-def check_missing_rows(df: pd.DataFrame, unit_no) -> pd.DataFrame:
-    if df is None:
+def check_missing_rows(data: pd.DataFrame, unit_no) -> pd.DataFrame:
+    if data is None:
         return None, [], []
     errors = []
     bad_indices = []
 
-    first_row = df.iloc[0]
+    first_row = data.iloc[0]
     num_columns = len(first_row)
 
-    initial_time = df.iloc[0, 0]
-    second_row_time = df.iloc[1, 0]
+    initial_time = data.iloc[0, 0]
+    second_row_time = data.iloc[1, 0]
     time_step = find_time_step(initial_time, second_row_time, unit_no)
 
-    final_time = df.iloc[-1, 0]
+    final_time = data.iloc[-1, 0]
     
     index = 0
-    current_time = df.iloc[index, 0]
+    current_time = data.iloc[index, 0]
     expected_time = current_time
 
     while current_time != final_time:
         expected_time = increment_time(expected_time, time_step)
         index += 1
-        current_time = df.iloc[index, 0]
+        current_time = data.iloc[index, 0]
 
         # Check for missing rows and log errors
         while current_time != expected_time:
@@ -90,11 +90,37 @@ def check_missing_rows(df: pd.DataFrame, unit_no) -> pd.DataFrame:
             errors.append(f"Unit {unit_no}: {expected_time} Index {index}: Missing all data")
             bad_indices.append(index)
             missing_row = [expected_time] + [""] * (num_columns - 1)
-            df = pd.concat([df.iloc[:index], pd.DataFrame([missing_row], columns=df.columns), df.iloc[index:]]).reset_index(drop=True)
+            data = pd.concat([data.iloc[:index], pd.DataFrame([missing_row], columns=data.columns), data.iloc[index:]]).reset_index(drop=True)
             expected_time = increment_time(expected_time, time_step)
             index += 1  # Adjust index to account for the inserted row
 
-    return df, errors, bad_indices
+    return data, errors, bad_indices
+
+def check_total_energy(data, unit_no):
+    errors = []
+    bad_count = 0
+    good_count = 0
+
+    # iterate through data rows
+    for index, row in data.iterrows():
+        main_elec_cols = row.filter(regex='Main\\s*Electricity(?!\\s*Gen).*(Watts)$')
+        pv_cols = row.filter(regex="PV.*(Watts)$")
+        energy_generated = pd.to_numeric(main_elec_cols).sum(skipna=True) + pd.to_numeric(pv_cols).sum(skipna=True)        
+        elec_cols = row.filter(regex="^(?!.*Gen\\s).*(Watts)$")
+        energy_consumed = pd.to_numeric(elec_cols).sum(skipna=True) - energy_generated
+
+        # Round the energy values to 2 decimal places
+        energy_generated = round(energy_generated, 2)
+        energy_consumed = round(energy_consumed, 2)
+
+        if energy_generated*1.01 >= energy_consumed: # 1% tolerance
+            good_count += 1
+        else:
+            bad_count += 1
+            Log.write(f"***Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
+            print(f"{color.RED}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}{color.END}")
+            errors.append(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
+    return errors
 
 # Function to check if values in a DataFrame column are within specified limits and log errors
 def check_limits(regex, data, min_value, max_value, unit_no, bad_indices):
@@ -136,5 +162,5 @@ def check_pulse(regex, data, min_value, max_value, unit_no, bad_indices):
     if pd.to_numeric(data[column]).sum(skipna=True) == 0:
         print(f"{color.YELLOW}Unit {unit_no}: {column} no response - Possible Disconnection{color.END}")
         Log.write(f"*Unit {unit_no}: {column} no response - Possible Disconnection")
-        errors.append(f"Unit {unit_no}: {column} no response - Possible Disconnection")
+        errors.append(f"*Unit {unit_no}: {column} no response - Possible Disconnection")
     return errors
