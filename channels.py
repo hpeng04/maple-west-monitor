@@ -44,7 +44,7 @@ channels = {
     "Main Electricity 1 Watts": Channel("Main Electricity 1 Watts", 0, 10000, "Main\\s*Electricity\\s*1\\s*(Watts)$", check_limits),
     "Main Electricity 2 Watts": Channel("Main Electricity 2 Watts", 0, 10000, "Main\\s*Electricity\\s*2\\s*(Watts)$", check_limits),
     "Main Electricity Gen Watts": Channel("Main Electricity Gen Watts", -10000, 10000, "Main\\s*Electricity\\s*Gen\\s*(Watts)$", check_limits),
-    "Main Electricity Gen Watts 1": Channel("Main Electricity Gen Watts 1", -10000, 10000, "Main\\s*Electricity\\s*Gen\\s*Watts\\s*1$", check_limits),
+    "Main Electricity Gen Watts 1": Channel("Main Electricity Gen Watts 1", -10000, 10000, "Main\\s*Electricity\\s*Gen\\s*Watts.*1$", check_limits),
     "Main Floor Plugs Watts": Channel("Main Floor Plugs Watts", 0, 3000, "Main.*Floor.*Plugs?.*(Watts)$", check_limits),
     "Office Room Plugs Watts": Channel("Office Room Plugs Watts", 0, 3000, "Office.*Room.*Plugs?.*(Watts)$", check_limits),
     "PV Generation 1 Watts": Channel("PV Generation 1 Watts", 0, 1000, "PV.*Generation.*1.*(Watts)$", check_limits),
