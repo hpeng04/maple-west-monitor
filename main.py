@@ -82,7 +82,7 @@ def run_load_units():
         body = compile_email_body(errors)
         send_email(subject=f"Maple West Data Error(s) Detected", body=body, attachment='log.txt', to=['hhpeng@ualberta.ca'])
 
-def run_download_units(email_to: list[str] = ['hhpeng@ualberta.ca']):
+def run_download_units(email_to: list[str] = ['hhpeng@ualberta.ca'], save_files: bool = False):
     delete_log()
     yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
     Log.write(f"{yesterday.strftime('%Y-%m-%d')}\n")
@@ -90,7 +90,7 @@ def run_download_units(email_to: list[str] = ['hhpeng@ualberta.ca']):
     units = load_units('config/')
     for unit in units:
         unit.download_minute_data()
-        errors += unit.check_quality()
+        errors += unit.check_quality(save_files)
     # if error len > 0, then send email and log to the user
     if len(errors) > 0:
         body = compile_email_body(errors)
@@ -110,7 +110,7 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    # run_download_units()
-    run_load_units()
+    run_download_units()
+    # run_load_units()
 
 

@@ -91,7 +91,7 @@ class Unit:
         url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportMonthly/{self.serial}/{current_date}'
         self._download(url)
 
-    def check_quality(self):
+    def check_quality(self, save_files:bool = False):
         '''
         Check the quality of the data using the rules provided
 
@@ -118,6 +118,7 @@ class Unit:
 
         if not os.path.exists(f'Data/{self.unit_no}'):
             os.makedirs(f'Data/{self.unit_no}')
-        self.data.to_csv(f'Data/{self.unit_no}/Unit_{self.unit_no}_{date}.csv', index=False)
+        if save_files:
+            self.data.to_csv(f'Data/{self.unit_no}/Unit_{self.unit_no}_{date}.csv', index=False)
         Log.write("\n")
         return errors
