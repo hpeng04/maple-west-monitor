@@ -154,7 +154,7 @@ def check_temperature(regex, data, min_value, max_value, unit_no, bad_indices):
         return errors
     return errors
 
-def check_pulse(regex, data, min_value, max_value, unit_no, bad_indices):
+def check_activity(regex, data, min_value, max_value, unit_no, bad_indices):
     errors = check_limits(regex, data, min_value, max_value, unit_no, bad_indices)
     if f"Unit {unit_no}: Column not found: {regex}" in errors:
         return errors
