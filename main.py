@@ -113,8 +113,8 @@ def main():
     #     print(unit.data)
 
 if __name__ == "__main__":
-    # main()
-    run_download_units(save_files=True)
+    main()
+    # run_download_units(save_files=True)
     # run_load_units()
 
 
