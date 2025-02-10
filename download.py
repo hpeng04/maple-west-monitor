@@ -7,6 +7,7 @@ import urllib.request, csv
 # import pandas as pd
 
 from color import color
+import os
 
 # gauth = GoogleAuth(settings_file='/home/charlie/SCRIPTS/settings.yaml')
 # drive = GoogleDrive(gauth)
@@ -58,9 +59,14 @@ yesterday = date.today() - timedelta(days=1)
 #Loop through locations, download and save each CSV from yesterday
 
 def download_all():
+    if not os.path.exists("./Raw Data"):
+        os.makedirs("./Raw Data")
 
     for i in range(len(locations)):
-        current_filename = "./Raw Data/" + locations[i][1] + "_" + yesterday.strftime("%Y-%m-%d") + ".csv"
+        current_filename = "./Raw Data/" + locations[i][0] + "/" + locations[i][1] + "_" + yesterday.strftime("%Y-%m-%d") + ".csv"
+        if not os.path.exists("./Raw Data/" + locations[i][0]):
+            os.makedirs("./Raw Data/" + locations[i][0])
+        
         print(f"Downloading {locations[i][0]}: {locations[i][2]}")
         try:
             urllib.request.urlretrieve("http://"+ locations[i][2] + "/index.php/pages/export/exportDaily/" + locations[i][1] + "/" + yesterday.strftime("%Y-%m-%d") + "/0", current_filename)
@@ -97,7 +103,7 @@ def download_all():
                         nData.append([datetime.strptime(times[j + 1],"%Y-%m-%d %H:%M:%S") + timedelta(minutes=k + 1), 0, 0 ,0, 1])
         
         nData.insert(0,["Date", "Single Point", "Two Points", "Three Points", "Multiple Points"])
-        with open("./Raw Data/" + locations[i][1] + "_" + yesterday.strftime("%Y-%m-%d") + "_missing.csv", 'w') as f:
+        with open("./Raw Data/" + locations[i][0] + "/" + locations[i][1] + "_" + yesterday.strftime("%Y-%m-%d") + "_missing.csv", 'w') as f:
             writer = csv.writer(f)
             writer.writerows(nData)
 
