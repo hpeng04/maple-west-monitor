@@ -113,7 +113,8 @@ def check_total_energy(data, unit_no):
         energy_generated = round(energy_generated, 2)
         energy_consumed = round(energy_consumed, 2)
 
-        if energy_generated*1.01 >= energy_consumed: # 1% tolerance
+        diff = energy_generated - energy_consumed
+        if energy_generated*1.01 >= energy_consumed or abs(diff) < 5: # 1% tolerance
             good_count += 1
         else:
             bad_count += 1
@@ -160,8 +161,9 @@ def check_activity(regex, data, min_value, max_value, unit_no, bad_indices):
     if f"Unit {unit_no}: Column not found: {regex}" in errors:
         return errors
     column = data.filter(regex=regex).columns[0]
+    column_name = column.lstrip("0123456789- ")
     if pd.to_numeric(data[column]).sum(skipna=True) == 0:
-        print(f"{color.YELLOW}Unit {unit_no}: {column} no response - Possible Disconnection{color.END}")
-        Log.write(f"*Unit {unit_no}: {column} no response - Possible Disconnection")
-        errors.append(f"*Unit {unit_no}: {column} no response - Possible Disconnection")
+        print(f"{color.YELLOW}Unit {unit_no}: {column_name} no response - Possible Disconnection{color.END}")
+        Log.write(f"*Unit {unit_no}: {column_name} no response - Possible Disconnection")
+        errors.append(f"*Unit {unit_no}: {column_name} no response - Possible Disconnection")
     return errors

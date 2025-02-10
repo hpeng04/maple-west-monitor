@@ -8,6 +8,8 @@ from log import Log
 import json
 import datetime
 import re
+from color import color
+from download import download_all
 
 # Deprecated function that loads config.csv
 # def load_units(config_path: str) -> list[Unit]:
@@ -72,6 +74,7 @@ def run_load_units():
     units = load_units('config/')
     for unit in units:
         if not (unit.load_data('Data')): # True if data is loaded successfully
+            print(f"{color.RED}Unit {unit}: Failed to load data{color.END}")
             continue
         unit_error = unit.check_quality() 
         if unit_error is None: # None if df is empty or data is not loaded
@@ -97,6 +100,7 @@ def run_download_units(email_to: list[str] = ['hhpeng@ualberta.ca'], save_files:
         send_email(subject=f"Maple West Data Error(s) Detected", body=body, attachment='log.txt', to=email_to)
 
 def main():
+    download_all() # Separate independent function from the quality checking program
     run_download_units(['hhpeng@ualberta.ca', 'by1@ualberta.ca'])
 
     # for unit in units:
@@ -110,7 +114,7 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    run_download_units()
+    run_download_units(save_files=True)
     # run_load_units()
 
 
