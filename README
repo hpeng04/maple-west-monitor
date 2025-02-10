@@ -1,0 +1,38 @@
+"""
+V1
+
+This program is designed to manage and monitor data from various units, each equipped with multiple channels that measure different parameters. The program performs the following key functions:
+
+1. **Unit Initialization and Configuration**:
+  - Units are initialized with specific configurations loaded from JSON files. Each unit has a unique number, block, IP address, port, serial number, and a set of channels that are monitored.
+  - Within each unit's JSON file, the boolean value corresponding to each channel determines whether or not the channel will be checked.
+
+2. **Data Loading and Downloading**:
+  - Data can be loaded from local CSV files or downloaded from a specified URL. The data is expected to be in a time-series format, and the program ensures that the data is sorted in ascending order of time.
+
+3. **Data Quality Checks**:
+  - The program performs various quality checks on the data, including:
+    - Checking for missing rows and logging errors if any data points are missing.
+    - Verifying that the total energy generated and consumed is within acceptable limits.
+    - Ensuring that values in each channel are within specified limits and logging any discrepancies.
+    - Checking for activity in channels to detect possible disconnections.
+
+4. **Logging and Alerts**:
+  - Errors and important events are logged to a file (`log.txt`).
+  - If any data errors are detected, an email alert is sent to specified recipients with details of the errors and the log file attached.
+
+5. **Utility Functions**:
+  - Various utility functions are provided to support the main functionalities, including time incrementing, time step detection, and email sending.
+
+Modules and Key Components:
+- `unit.py`: Defines the `Unit` class, which represents a unit with multiple channels and provides methods for data loading, downloading, and quality checking.
+- `channels.py`: Defines the `Channel` class and a dictionary of channel configurations, specifying the limits and check functions for each channel.
+- `rules.py`: Contains functions for performing data quality checks, such as checking for missing rows, verifying energy totals, and ensuring values are within limits.
+- `main.py`: Contains the main functions for running the program, including loading units, downloading data, and performing quality checks.
+- `log.py`: Provides a simple logging mechanism to write messages to a log file.
+- `alert.py`: Contains the function for sending email alerts with the log file attached.
+- `color.py`: Defines color codes for printing colored messages to the console.
+
+Usage:
+- The program can be run by executing the `main()` function in `main.py`, which will download the latest data, perform quality checks, and send email alerts if any errors are detected.
+"""
