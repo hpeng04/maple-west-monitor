@@ -147,7 +147,8 @@ def check_limits(regex, data, min_value, max_value, unit_no, bad_indices):
         errors.append(f"***Unit {unit_no}: Column not found: {regex}")
         return errors
 
-# Function to check if temperature values in a DataFrame column are within specified limits and log errors
+
+# DEPRECATED: Function to check if temperature values in a DataFrame column are within specified limits and log errors
 def check_temperature(regex, data, min_value, max_value, unit_no, bad_indices):
     errors = check_limits(regex, data, min_value, max_value, unit_no, bad_indices)
     if f"Unit {unit_no}: Column not found: {regex}" in errors:
