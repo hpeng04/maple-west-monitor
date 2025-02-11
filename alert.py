@@ -4,6 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 import os
 from color import color
+from log import Log
 
 # Need to connect to UAlberta VPN or be on UAlberta network to send email.
 # https://universityofalberta.freshservice.com/support/solutions/articles/19000109142
@@ -44,8 +45,8 @@ def send_email(subject:str, body:str, attachment, to:list[str], from_:str = emai
             server = smtplib.SMTP_SSL('smtp.ualberta.ca', 465)
         else:
             user = from_
-            print(user)
-            print(password)
+            # print(user)
+            # print(password)
             server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.ehlo()
         server.login(user, password)
@@ -61,4 +62,4 @@ def send_email(subject:str, body:str, attachment, to:list[str], from_:str = emai
         return False
     
 if __name__ == "__main__":
-    send_email('Test', 'This is a test email', 'log.txt', ['hhpeng@ualberta.ca'])
+    send_email('Test', 'This is a test email', Log.get_path(), ['hhpeng@ualberta.ca'])
