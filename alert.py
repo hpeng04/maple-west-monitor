@@ -15,7 +15,7 @@ with open('email_cred.txt', 'r') as f:
 def send_email(subject:str, body:str, attachment, to:list[str], from_:str = email, password:str = password) -> bool:
     
     try:
-        ccid = from_.split('@')[0]
+        
         # Create message container
         msg = MIMEMultipart()
         msg['Subject'] = subject
@@ -39,9 +39,16 @@ def send_email(subject:str, body:str, attachment, to:list[str], from_:str = emai
             msg.attach(part)
 
         # Set up SMTP server
-        server = smtplib.SMTP_SSL('smtp.ualberta.ca', 465)
+        if 'ualberta' in from_:
+            user = from_.split('@')[0]
+            server = smtplib.SMTP_SSL('smtp.ualberta.ca', 465)
+        else:
+            user = from_
+            print(user)
+            print(password)
+            server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.ehlo()
-        server.login(ccid, password)
+        server.login(user, password)
 
         # Send email
         server.send_message(msg)
