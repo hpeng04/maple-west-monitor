@@ -64,7 +64,7 @@ def check_missing_rows(data: pd.DataFrame, unit_no) -> pd.DataFrame:
     final_time = data.iloc[-1, 0]
     
     index = 0
-    current_time = data.iloc[index, 0]
+    current_time = data.iloc[index, 0].split(" ")[0] + " 00:00:00"
     expected_time = current_time
 
     while current_time != final_time:
