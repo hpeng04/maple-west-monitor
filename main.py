@@ -11,23 +11,6 @@ import re
 from color import color
 from download import download_all
 
-# Deprecated function that loads config.csv
-# def load_units(config_path: str) -> list[Unit]:
-#     '''
-#     initialize units from the config file
-
-#     param: config_path: str: path to the config file
-#     return: list[Unit]: list of units
-#     '''
-#     units = []
-#     with open(config_path, 'r') as file:
-#         lines = file.readlines()[1:] # Read all lines after header
-#         for line in lines:
-#             unit_no, block, ip_address, port, serial = line.strip().split(',')
-#             unit = Unit(int(unit_no), int(block), ip_address, port, serial)
-#             units.append(unit)
-#     return units
-
 def load_units(config_path: str) -> list[Unit]:
     '''
     Load unit config jsons from folder path
@@ -83,7 +66,7 @@ def run_load_units():
         # if error len > 0, then send email and log to the user
     if len(errors) > 0:
         body = compile_email_body(errors)
-        send_email(subject=f"Maple West Data Error(s) Detected", body=body, attachment='log.txt', to=['hhpeng@ualberta.ca'])
+        send_email(subject=f"Maple West Data Error(s) Detected", body=body, attachment=Log.get_path(), to=['hhpeng@ualberta.ca'])
 
 def run_download_units(email_to: list[str] = ['hhpeng@ualberta.ca'], save_files: bool = False):
     delete_log()
@@ -97,24 +80,15 @@ def run_download_units(email_to: list[str] = ['hhpeng@ualberta.ca'], save_files:
     # if error len > 0, then send email and log to the user
     if len(errors) > 0:
         body = compile_email_body(errors)
-        send_email(subject=f"Maple West Data Error(s) Detected", body=body, attachment='log.txt', to=email_to)
+        send_email(subject=f"Maple West Data Error(s) Detected", body=body, attachment=Log.get_path(), to=email_to)
 
 def main():
     download_all() # Separate independent function from the quality checking program
     run_download_units(['hhpeng@ualberta.ca', 'by1@ualberta.ca'])
 
-    # for unit in units:
-    #     print(unit)
-    #     try:
-    #         unit.download_minute_data()
-    #     except:
-    #         print(f'{color.RED}Failed to load data for unit {unit}{color.END}')
-    #         continue
-    #     print(unit.data)
-
 if __name__ == "__main__":
     main()
-    # run_download_units(save_files=True)
+    # run_download_units(save_files=False)
     # run_load_units()
 
 
