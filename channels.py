@@ -1,4 +1,4 @@
-from rules import check_limits, check_temperature, check_activity
+from rules import check_limits, check_activity
 
 class Channel:
     def __init__(self, name:str, min_value:float, max_value:float, regex:str, check_func:callable=None):
@@ -14,11 +14,12 @@ class Channel:
     def __repr__(self):
         return f"Channel {self.name}, {self.min_value}-{self.max_value}, {self.regex}\n"
     
-    def check(self, data, unit_no, bad_indices):
+    def check_channel(self, data, unit_no, bad_indices):
         errors = []
+        warnings = []
         if self.check_func:
-            errors = self.check_func(self.regex, data, self.min_value, self.max_value, unit_no, bad_indices)
-        return errors
+            errors, warnings = self.check_func(self.regex, data, self.min_value, self.max_value, unit_no, bad_indices)
+        return errors, warnings
 
 channels = {
     "A/C Watts": Channel("A/C Watts", 0, 3500, "A/C (Watts)$", check_limits),

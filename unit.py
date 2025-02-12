@@ -22,9 +22,11 @@ class Unit:
         self.port = port
         self.serial = serial
         self.channels = channels
+        self.warnings = []
+        self.errors = []
                 
     def __str__(self):
-        return f"Unit {self.unit_no}, block{self.block}"
+        return f"Unit {self.unit_no}"
     
     def __repr__(self):
         return f"Unit {self.unit_no}, Block {self.block}, {self.ip_address}:{self.port}/{self.serial}\n"
@@ -43,6 +45,23 @@ class Unit:
 
     def _natural_sort_key(self, s):
         return [int(text) if text.isdigit() else text.lower() for text in re.split('(\\d+)', s)]
+    
+    def _download(self, url:str):
+        '''
+        Download data from the given url
+
+        param: url: str: url to download data from
+        '''
+        Log.write(f"Downloading Unit {self.unit_no}: {self.ip_address}:{self.port}")
+        print(f"Downloading Unit {self.unit_no}: {self.ip_address}:{self.port}")
+        try:
+            self.data = self._fix_order(pd.read_csv(url, header=0, on_bad_lines='skip'))
+        except:
+            Log.write(f"Unit {self.unit_no}: Failed to download data from {url}\n\n")
+            print(f"{color.RED}Unit {self.unit_no}: Failed to download data from {url}{color.END}")
+            self.data = None
+            self.errors += [f"Unit {self.unit_no}: Failed to download data from {url}"]
+            
 
     def load_data(self, path:str):
         '''
@@ -64,14 +83,6 @@ class Unit:
         if self.data is None:
             return False
         return True
-    
-    def _download(self, url:str):
-        '''
-        Download data from the given url
-
-        param: url: str: url to download data from
-        '''
-        self.data = self._fix_order(pd.read_csv(url, header=0, on_bad_lines='skip'))
 
     def download_minute_data(self):
         '''
@@ -98,21 +109,27 @@ class Unit:
         param: rules: list[DataQualityRule]: list of rules to be applied
         return: None
         '''
-        errors = []
+        if self.data is None:
+            return self.errors, self.warnings
+        
         date = datetime.now().strftime('%Y-%m-%d')
         Log.write(f"Checking Unit {self.unit_no}: {self.ip_address}:{self.port}")
         print(f"Checking Unit {self.unit_no}: {self.ip_address}:{self.port}")
-        self.data, missing_row_errors, bad_indices = check_missing_rows(self.data, self.unit_no)
-        errors += check_total_energy(self.data, self.unit_no)
-        if self.data is None:
-            return None
-        errors += missing_row_errors
+        self.data, missing_row_errors, missing_row_warnings, bad_indices = check_missing_rows(self.data, self.unit_no)
+        self.errors += missing_row_errors
+        self.warnings += missing_row_warnings
+
+        energy_errors, energy_warnings = check_total_energy(self.data, self.unit_no)
+        self.errors += energy_errors
+        self.warnings += energy_warnings
+
         for channel in self.channels:
             if self.channels[channel] == True:
                 # use the channel check quality function
-                errors += channels[channel].check(self.data, self.unit_no, bad_indices)
-                  
-        if len(errors) == 0:
+                channel_errors, channel_warnings = channels[channel].check_channel(self.data, self.unit_no, bad_indices)
+                self.errors += channel_errors
+                self.warnings += channel_warnings
+        if len(self.errors) == 0 and len(self.warnings) == 0:
             print(f"{color.GREEN}Unit {self.unit_no}: Passed all quality checks{color.END}")
             Log.write(f"Unit {self.unit_no}: Passed all quality checks")
 
@@ -121,4 +138,4 @@ class Unit:
         if save_files:
             self.data.to_csv(f'Data/{self.unit_no}/Unit_{self.unit_no}_{date}.csv', index=False)
         Log.write("\n")
-        return errors
+        return self.errors, self.warnings

@@ -50,8 +50,9 @@ def find_time_step(initial_time: str, second_time: str, unit_no) -> int:
 # Function to check for missing rows in a DataFrame and log errors
 def check_missing_rows(data: pd.DataFrame, unit_no) -> pd.DataFrame:
     if data is None:
-        return None, [], []
+        return None, [], [], []
     errors = []
+    warnings = []
     bad_indices = []
 
     first_row = data.iloc[0]
@@ -68,12 +69,15 @@ def check_missing_rows(data: pd.DataFrame, unit_no) -> pd.DataFrame:
     expected_time = current_time
 
     while current_time != final_time:
+        counter = 0
         expected_time = increment_time(expected_time, time_step)
         index += 1
         current_time = data.iloc[index, 0]
 
         # Check for missing rows and log errors
         while current_time != expected_time:
+            counter += 1
+
             current_time_obj = datetime.strptime(current_time, "%Y-%m-%d %H:%M:%S")
             expected_time_obj = datetime.strptime(expected_time, "%Y-%m-%d %H:%M:%S")
 
@@ -87,17 +91,21 @@ def check_missing_rows(data: pd.DataFrame, unit_no) -> pd.DataFrame:
 
             Log.write(f'Unit {unit_no}: {expected_time} Index {index}: Missing all data')
             print(f"{color.RED}Unit {unit_no}: {expected_time} Index {index}: Missing all data{color.END}")
-            errors.append(f"Unit {unit_no}: {expected_time} Index {index}: Missing all data")
+            if counter > 4:
+                errors.append(f"Unit {unit_no}: {expected_time} Index {index}: Missing all data")
+            else: 
+                warnings.append(f"Unit {unit_no}: {expected_time} Index {index}: Missing all data")
             bad_indices.append(index)
             missing_row = [expected_time] + [""] * (num_columns - 1)
             data = pd.concat([data.iloc[:index], pd.DataFrame([missing_row], columns=data.columns), data.iloc[index:]]).reset_index(drop=True)
             expected_time = increment_time(expected_time, time_step)
             index += 1  # Adjust index to account for the inserted row
 
-    return data, errors, bad_indices
+    return data, errors, warnings, bad_indices
 
 def check_total_energy(data, unit_no):
     errors = []
+    warnings = []
     bad_count = 0
     good_count = 0
 
@@ -116,54 +124,65 @@ def check_total_energy(data, unit_no):
         diff = energy_generated - energy_consumed
         if energy_generated*1.01 >= energy_consumed or abs(diff) < 5: # 1% tolerance
             good_count += 1
+        elif energy_generated*1.05 >= energy_consumed or abs(diff) < 10: # 5% tolerance
+            bad_count += 1
+            Log.write(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
+            print(f"{color.RED}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}{color.END}")
+            warnings.append(f"{data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
         else:
             bad_count += 1
-            Log.write(f"***Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
+            Log.write(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
             print(f"{color.RED}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}{color.END}")
-            errors.append(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
-    return errors
+            errors.append(f"{data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
+    return errors, warnings
 
 # Function to check if values in a DataFrame column are within specified limits and log errors
 def check_limits(regex, data, min_value, max_value, unit_no, bad_indices):
     errors = []
+    warnings = []
     try:
         column = data.filter(regex=regex).columns[0]
         values = data[column]
         column_name = column.lstrip("0123456789- ")
+        null_counter = 0
+        limit_counter = 0
         for index, value in values.items():
             if index in bad_indices:
                 continue
             if value == None or pd.isna(value) or value == "":  # Skip empty values
+                null_counter += 1
                 print(f"{color.RED}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Missing data in {column_name}{color.END}")
                 Log.write(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Missing data in {column_name}")
-                errors.append(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Missing data in {column_name}")
+                if null_counter > 2:
+                    errors.append(f"{data.iloc[index, 0]} Index {index}: Missing data in {column_name}")
+                else:
+                    warnings.append(f"{data.iloc[index, 0]} Index {index}: Missing data in {column_name}")
             elif float(value) < min_value or float(value) > max_value:
+                limit_counter += 1
                 print(f"{color.YELLOW}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: {column_name} out of limits, Value: {value}, Limits: ({min_value}, {max_value}){color.END}")
                 Log.write(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: {column_name} out of limits, Value: {value}, Limits: ({min_value}, {max_value})")
-                errors.append(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: {column_name} out of limits, Value: {value}, Limits: ({min_value}, {max_value})")
-        return errors
+                if limit_counter > 2:
+                    errors.append(f"{data.iloc[index, 0]} Index {index}: {column_name} out of limits, Value: {value}, Limits: ({min_value}, {max_value})")
+                else:
+                    warnings.append(f"{data.iloc[index, 0]} Index {index}: {column_name} out of limits, Value: {value}, Limits: ({min_value}, {max_value})")
+            else:
+                null_counter = 0
+                limit_counter = 0
+        return errors, warnings
     except IndexError:
         print(f"{color.RED}Unit {unit_no}: Column not found: {regex}{color.END}")
         Log.write(f"***Unit {unit_no}: Column not found: {regex}")
-        errors.append(f"***Unit {unit_no}: Column not found: {regex}")
-        return errors
-
-
-# DEPRECATED: Function to check if temperature values in a DataFrame column are within specified limits and log errors
-def check_temperature(regex, data, min_value, max_value, unit_no, bad_indices):
-    errors = check_limits(regex, data, min_value, max_value, unit_no, bad_indices)
-    if f"Unit {unit_no}: Column not found: {regex}" in errors:
-        return errors
-    return errors
+        errors.append(f"Column not found: {regex}")
+        return errors, warnings
 
 def check_activity(regex, data, min_value, max_value, unit_no, bad_indices):
-    errors = check_limits(regex, data, min_value, max_value, unit_no, bad_indices)
+    errors, warnings = check_limits(regex, data, min_value, max_value, unit_no, bad_indices)
     if f"Unit {unit_no}: Column not found: {regex}" in errors:
-        return errors
+        return errors, warnings
     column = data.filter(regex=regex).columns[0]
     column_name = column.lstrip("0123456789- ")
     if pd.to_numeric(data[column]).sum(skipna=True) == 0:
         print(f"{color.YELLOW}Unit {unit_no}: {column_name} no response - Possible Disconnection{color.END}")
-        Log.write(f"*Unit {unit_no}: {column_name} no response - Possible Disconnection")
-        errors.append(f"*Unit {unit_no}: {column_name} no response - Possible Disconnection")
-    return errors
+        Log.write(f"Unit {unit_no}: {column_name} no response - Possible Disconnection")
+        errors.append(f"{column_name} no response - Possible Disconnection")
+    return errors, warnings
