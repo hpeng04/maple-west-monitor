@@ -25,7 +25,7 @@ def load_units(config_path: str) -> list[Unit]:
             with open(os.path.join(config_path, file), 'r') as f:
                 unit = json.load(f)
                 units.append(Unit(unit['unit_no'], unit['block'], unit['ip_address'], unit['port'], unit['serial'], unit['channels']))
-    return units
+    return units.sort()
 
 
 def delete_log():
@@ -99,6 +99,6 @@ def main():
     run_download_units(['hhpeng@ualberta.ca', 'by1@ualberta.ca'])
 
 if __name__ == "__main__":
-    # main()
-    run_download_units(save_files=True)
+    main()
+    # run_download_units(save_files=True)
     # run_load_units()
