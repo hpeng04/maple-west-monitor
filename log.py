@@ -3,17 +3,17 @@ import os
 
 class Log:
     path = r'Logs/'
-
+    missing_path = r'missing_data.txt'
     @staticmethod
-    def write(message, is_loaded=False):
+    def write(message, date=None):
         if not os.path.exists(Log.path):
             os.makedirs(Log.path)
-        if is_loaded == False:
+        if not date:
             yesterday = datetime.now() - timedelta(days=1)
             formatted_date = yesterday.strftime('%Y-%m-%d')
             path = Log.path + formatted_date + '.txt'
         else:
-            path = Log.path + 'log.txt'
+            path = Log.path + date + '.txt'
         with open(path, 'a') as file:
             file.write(message + '\n')
     
@@ -23,3 +23,9 @@ class Log:
         formatted_date = yesterday.strftime('%Y-%m-%d')
         path = Log.path + formatted_date + '.txt'
         return path
+    
+    @staticmethod
+    def record_missing(unit_no, date):
+        with open(Log.missing_path, 'a') as file:
+            file.write(f'{unit_no},{date}\n')
+        return
