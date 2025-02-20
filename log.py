@@ -4,7 +4,7 @@ import os
 
 class Log:
     path = r'Logs/'
-    missing_path = r'missing_data.txt'
+    missing_path = r'missing_data.csv'
     yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
 
     @staticmethod
