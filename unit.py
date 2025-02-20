@@ -6,6 +6,9 @@ from rules import check_missing_rows, check_total_energy
 from channels import channels
 from log import Log
 from color import color
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
+from alert import send_email
 
 class Unit:
     block_1 = [2804, 2806, 2808, 2810, 2812, 2814, 2816, 2818]
@@ -31,6 +34,15 @@ class Unit:
     def __repr__(self):
         return f"Unit {self.unit_no}, Block {self.block}, {self.ip_address}:{self.port}/{self.serial}\n"
     
+    def __eq__(self, other):
+        return self.unit_no == other.unit_no
+    
+    def __lt__(self, other):
+        return self.unit_no < other.unit_no
+    
+    def __hash__(self):
+        return hash(self.unit_no)
+
     def _fix_order(self, df:pd.DataFrame):
         '''
         Sort the data is ascending order of time if not already sorted
@@ -61,6 +73,8 @@ class Unit:
             print(f"{color.RED}Unit {self.unit_no}: Failed to download data from {url}{color.END}")
             self.data = None
             self.errors += [f"Unit {self.unit_no}: Failed to download data from {url}"]
+            yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
+            Log.record_missing(self.unit_no, yesterday)
             
 
     def load_data(self, path:str):
@@ -102,6 +116,56 @@ class Unit:
         url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportMonthly/{self.serial}/{current_date}'
         self._download(url)
 
+    def check_space(self):
+        '''
+        Check the space available on the sd card
+        '''
+        url = f'http://{self.ip_address}:{self.port}/index.php/powerdisplay/getmainwatts'
+        page = urlopen(url)
+        html_bytes = page.read()
+        html = html_bytes.decode("utf-8")
+        soup = BeautifulSoup(html, 'html.parser')
+        outer_span = soup.find_all("span", title='\\"Total')[-1]
+        
+        inner_span = outer_span.find("span")
+        space = inner_span.text.split('<')[0]
+        if is_float(space) and float(space) > 1 and float(space) < 40:
+            Log.write(f"Unit {self.unit_no}: {space} GB left on the SD card")
+            print(f"Unit {self.unit_no}: {space} GB left on the SD card")
+        else:
+            # self.errors += [f"Unit {self.unit_no}: Less than 1GB of space available on the SD card"]
+            Log.write(f"Unit {self.unit_no}: Less than 1GB of space available on the SD card: {space} GB")
+            print(f"{color.RED}Unit {self.unit_no}: {space} GB left on the SD card, clear storage{color.END}")
+            body = f"Unit {self.unit_no}: Less than 1GB of space available on the SD card\n\n{space} GB left\n\nhttp://{self.ip_address}:{self.port}"
+            send_email(subject=f"Maple West SD Card Storage Almost Full", body=body)
+
+    def check_status(self):
+        '''
+        Check the status of the dashbox
+        '''
+        url = f'http://{self.ip_address}:{self.port}/index.php/powerdisplay/getmainwatts'
+        page = urlopen(url)
+        html_bytes = page.read()
+        html = html_bytes.decode("utf-8")
+        soup = BeautifulSoup(html, 'html.parser')
+        status_logo = soup.find("img")
+        # print(status_logo)
+        if status_logo:
+            img_src = status_logo['src']
+            # print(img_src)
+            if 'green' in img_src:
+                Log.write(f"Unit {self.unit_no}: Dashbox Status OK")
+                print(f"{color.GREEN}Unit {self.unit_no}: Dashbox Status OK{color.END}")
+            else:
+                Log.write(f"Unit {self.unit_no}: Dashbox Status Error")
+                print(f"{color.RED}Unit {self.unit_no}: Dashbox Status Error{color.END}")
+                body = f"Unit {self.unit_no}: Dashbox Status Error\n\nhttp://{self.ip_address}:{self.port}"
+                send_email(subject=f"Maple West Dashbox Status Errors Detected", body=body)
+                # self.errors.append(f"Unit {self.unit_no}: Dashbox Status Error")
+        else:
+            print("Something went wrong with status check")
+        # print(status_logo)
+
     def check_quality(self, save_files:bool = False):
         '''
         Check the quality of the data using the rules provided
@@ -139,3 +203,10 @@ class Unit:
             self.data.to_csv(f'Data/{self.unit_no}/Unit_{self.unit_no}_{date}.csv', index=False)
         Log.write("\n")
         return self.errors, self.warnings
+    
+def is_float(value):
+    try:
+        float(value)
+        return True
+    except (ValueError, TypeError):
+        return False
