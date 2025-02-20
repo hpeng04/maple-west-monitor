@@ -90,7 +90,7 @@ def check_missing_rows(data: pd.DataFrame, unit_no) -> pd.DataFrame:
                 break
 
             Log.write(f'Unit {unit_no}: {expected_time} Index {index}: Missing all data')
-            print(f"{color.RED}Unit {unit_no}: {expected_time} Index {index}: Missing all data{color.END}")
+            # print(f"{color.RED}Unit {unit_no}: {expected_time} Index {index}: Missing all data{color.END}")
             if counter > 4:
                 errors.append(f"Unit {unit_no}: {expected_time} Index {index}: Missing all data")
             else: 
@@ -106,8 +106,7 @@ def check_missing_rows(data: pd.DataFrame, unit_no) -> pd.DataFrame:
 def check_total_energy(data, unit_no):
     errors = []
     warnings = []
-    bad_count = 0
-    good_count = 0
+
 
     # iterate through data rows
     for index, row in data.iterrows():
@@ -122,18 +121,16 @@ def check_total_energy(data, unit_no):
         energy_consumed = round(energy_consumed, 2)
 
         diff = energy_generated - energy_consumed
-        if energy_generated*1.01 >= energy_consumed or abs(diff) < 5: # 1% tolerance
-            good_count += 1
-        elif energy_generated*1.05 >= energy_consumed or abs(diff) < 10: # 5% tolerance
-            bad_count += 1
+        if energy_generated*1.05 >= energy_consumed or abs(diff) < 10: # 1% tolerance
+            pass
+        else: # 5% tolerance
             Log.write(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
-            print(f"{color.RED}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}{color.END}")
-            warnings.append(f"{data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
-        else:
-            bad_count += 1
-            Log.write(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
-            print(f"{color.RED}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}{color.END}")
+            print(f"{color.YELLOW}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}{color.END}")
             errors.append(f"{data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
+        # else:
+        #     Log.write(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
+        #     print(f"{color.RED}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}{color.END}")
+        #     errors.append(f"{data.iloc[index, 0]} Index {index}: Energy Consumed: {energy_consumed} > Energy Generated: {energy_generated}")
     return errors, warnings
 
 # Function to check if values in a DataFrame column are within specified limits and log errors
@@ -151,7 +148,7 @@ def check_limits(regex, data, min_value, max_value, unit_no, bad_indices):
                 continue
             if value == None or pd.isna(value) or value == "":  # Skip empty values
                 null_counter += 1
-                print(f"{color.RED}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Missing data in {column_name}{color.END}")
+                # print(f"{color.YELLOW}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Missing data in {column_name}{color.END}")
                 Log.write(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Missing data in {column_name}")
                 if null_counter > 2:
                     errors.append(f"{data.iloc[index, 0]} Index {index}: Missing data in {column_name}")
@@ -159,7 +156,7 @@ def check_limits(regex, data, min_value, max_value, unit_no, bad_indices):
                     warnings.append(f"{data.iloc[index, 0]} Index {index}: Missing data in {column_name}")
             elif float(value) < min_value or float(value) > max_value:
                 limit_counter += 1
-                print(f"{color.YELLOW}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: {column_name} out of limits, Value: {value}, Limits: ({min_value}, {max_value}){color.END}")
+                # print(f"{color.YELLOW}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: {column_name} out of limits, Value: {value}, Limits: ({min_value}, {max_value}){color.END}")
                 Log.write(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: {column_name} out of limits, Value: {value}, Limits: ({min_value}, {max_value})")
                 if limit_counter > 2:
                     errors.append(f"{data.iloc[index, 0]} Index {index}: {column_name} out of limits, Value: {value}, Limits: ({min_value}, {max_value})")
