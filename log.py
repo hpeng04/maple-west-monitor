@@ -4,24 +4,19 @@ import os
 class Log:
     path = r'Logs/'
     missing_path = r'missing_data.txt'
+    yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
+
     @staticmethod
-    def write(message, date=None):
+    def write(message, date=yesterday):
         if not os.path.exists(Log.path):
             os.makedirs(Log.path)
-        if not date:
-            yesterday = datetime.now() - timedelta(days=1)
-            formatted_date = yesterday.strftime('%Y-%m-%d')
-            path = Log.path + formatted_date + '.txt'
-        else:
-            path = Log.path + date + '.txt'
+        path = Log.path + date + '.txt'
         with open(path, 'a') as file:
             file.write(message + '\n')
     
     @staticmethod
-    def get_path():
-        yesterday = datetime.now() - timedelta(days=1)
-        formatted_date = yesterday.strftime('%Y-%m-%d')
-        path = Log.path + formatted_date + '.txt'
+    def get_path(date=yesterday):
+        path = Log.path + date + '.txt'
         return path
     
     @staticmethod
