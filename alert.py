@@ -13,9 +13,13 @@ with open('email_cred.txt', 'r') as f:
     email = f.readline().strip()
     password = f.readline().strip()
 
-def send_email(subject:str, body:str, attachment, to:list[str], from_:str = email, password:str = password) -> bool:
+def send_email(subject:str, body:str, attachment=None, from_:str = email, password:str = password) -> bool:
     
     try:
+        to = []
+        with open('email_list.txt', 'r') as f:
+            for line in f:
+                to.append(line.strip())
         
         # Create message container
         msg = MIMEMultipart()
