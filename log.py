@@ -4,7 +4,7 @@ import os
 
 class Log:
     path = r'Logs/'
-    missing_path = r'missing_data.txt'
+    missing_path = r'failed_downloads.txt'
     yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
 
     @staticmethod
@@ -21,7 +21,7 @@ class Log:
         return path
     
     @staticmethod
-    def record_missing(unit_no, date, url):
+    def record_failed_downloads(unit_no, date, url):
         with open(Log.missing_path, 'a') as file:
             file.write(f'Unit {unit_no} failed download on {date}\n{url}\n\n')
         return
