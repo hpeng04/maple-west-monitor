@@ -17,6 +17,8 @@ class Unit:
 
     stack_units = [2818, 2820, 87, 77, 86, 78]
 
+    yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
+
     def __init__(self, unit_no: int, block: int, ip_address: str, port: str, serial:str, channels:dict, data:pd.DataFrame = None):
         self.unit_no = unit_no
         self.block = block # Deprecated
@@ -98,13 +100,12 @@ class Unit:
             return False
         return True
 
-    def download_minute_data(self):
+    def download_minute_data(self, date=yesterday):
         '''
         Download data for the last day (minute data)
         '''
-        yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d') # gets date in YYYY-MM-DD format as a str
         # year, month, day = map(int, current_date.split('-')) # converts date to ints
-        url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportDaily/{self.serial}/{yesterday}'
+        url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportDaily/{self.serial}/{date}'
         self._download(url)
 
     def download_hourly_data(self):
@@ -166,7 +167,7 @@ class Unit:
             print("Something went wrong with status check")
         # print(status_logo)
 
-    def check_quality(self, save_files:bool = False):
+    def check_quality(self, date=yesterday, save_files:bool = False):
         '''
         Check the quality of the data using the rules provided
 
@@ -176,7 +177,6 @@ class Unit:
         if self.data is None:
             return self.errors, self.warnings
         
-        date = datetime.now().strftime('%Y-%m-%d')
         Log.write(f"Checking Unit {self.unit_no}: {self.ip_address}:{self.port}")
         print(f"Checking Unit {self.unit_no}: {self.ip_address}:{self.port}")
         self.data, missing_row_errors, missing_row_warnings, bad_indices = check_missing_rows(self.data, self.unit_no)
