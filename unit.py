@@ -76,7 +76,7 @@ class Unit:
             self.data = None
             self.errors += [f"Unit {self.unit_no}: Failed to download data from {url}"]
             yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
-            Log.record_missing(self.unit_no, yesterday)
+            Log.record_missing(self.unit_no, yesterday, url)
             
 
     def load_data(self, path:str):
