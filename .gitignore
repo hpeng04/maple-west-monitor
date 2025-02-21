@@ -4,3 +4,4 @@ Data/
 failed_downloads.txt
 credentials.json
 client_secrets.json
+settings.yaml
