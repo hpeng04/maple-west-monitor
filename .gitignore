@@ -2,3 +2,5 @@ email_cred.txt
 log.txt
 Data/
 failed_downloads.txt
+credentials.json
+client_secrets.json
