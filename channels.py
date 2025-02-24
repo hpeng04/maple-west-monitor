@@ -1,4 +1,4 @@
-from rules import check_limits, check_activity
+from rules import check_limits, check_pulse, check_water_pulse
 
 class Channel:
     def __init__(self, name:str, min_value:float, max_value:float, regex:str, check_func:callable=None):
@@ -23,7 +23,7 @@ class Channel:
 
 channels = {
     "A/C Watts": Channel("A/C Watts", 0, 3500, "A/C (Watts)$", check_limits),
-    "AHU Watts": Channel("AHU Watts", 0, 310, "AHU (Watts)$", check_activity),
+    "AHU Watts": Channel("AHU Watts", 0, 310, "AHU (Watts)$", check_pulse),
     "Baseboard Heater 1 Watts": Channel("Baseboard Heater 1 Watts", 0, 2000, "Baseboard.*Heater.*1.*(Watts)$", check_limits),
     "Baseboard Heater 2 Watts": Channel("Baseboard Heater 2 Watts", 0, 2000, "Baseboard.*Heater.*2.*(Watts)$", check_limits),
     "Baseboard Heater 3 Watts": Channel("Baseboard Heater 3 Watts", 0, 2000, "Baseboard.*Heater.*3.*(Watts)$", check_limits),
@@ -35,7 +35,7 @@ channels = {
     "Electrical Baseboard 2 Watts": Channel("Electrical Baseboard 2 Watts", 0, 2000, "Electrical.*Baseboard2.*(Watts)$", check_limits),
     "Electrical Baseboard 3 Watts": Channel("Electrical Baseboard 3 Watts", 0, 2000, "Electrical.*Baseboard3.*(Watts)$", check_limits),
     "Electrical Baseboard 4 Watts": Channel("Electrical Baseboard 4 Watts", 0, 2000, "Electrical.*Baseboard4.*(Watts)$", check_limits),
-    "Fridge Watts": Channel("Fridge Watts", 0, 627.2, "Fridge.*(Watts)$", check_activity),
+    "Fridge Watts": Channel("Fridge Watts", 0, 627.2, "Fridge.*(Watts)$", check_pulse),
     "Ground Level Plugs Watts": Channel("Ground Level Plugs Watts", 0, 3000, "Ground.*Level.*Plugs?.*(Watts)$", check_limits),
     "HRV Watts": Channel("HRV Watts", 0, 500, "HRV.*(Watts)$", check_limits),
     "Hot Water Tank 1 Watts": Channel("Hot Water Tank 1 Watts", 0, 4500, "Hot.*Water.*Tank.*1.*(Watts)$", check_limits),
@@ -60,7 +60,7 @@ channels = {
     "Heat Recovery Water Avg C": Channel("Heat Recovery Water Avg C", 0.0001, 45, "Heat.*C$", check_limits),
     "Hot Water Avg C": Channel("Hot Water Avg C", 0.0001, 65, "Hot.*Water.*Avg.*C$", check_limits),
     "Volts": Channel("Volts", 60, 180, "Volts", check_limits),
-    "Cold Water Cubic Meter": Channel("Cold Water Cubic Meter", 0, 25, "Cold.*Water.*Cubic.*(Meter)$", check_activity),
-    "Hot Water Cubic Meter": Channel("Hot Water Cubic Meter", 0, 25, "Hot.*Water.*Cubic.*(Meter)$", check_activity),
-    "Natural Gas": Channel("Natural Gas", 0, 25, "Natural.*Gas", check_activity)
+    "Cold Water Cubic Meter": Channel("Cold Water Cubic Meter", 0, 25, "Cold.*Water.*Cubic.*(Meter)$", check_water_pulse),
+    "Hot Water Cubic Meter": Channel("Hot Water Cubic Meter", 0, 25, "Hot.*Water.*Cubic.*(Meter)$", check_water_pulse),
+    "Natural Gas": Channel("Natural Gas", 0, 25, "Natural.*Gas", check_pulse)
 }

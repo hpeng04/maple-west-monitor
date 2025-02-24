@@ -150,8 +150,8 @@ def check_limits(regex, data, min_value, max_value, unit_no, bad_indices):
                 null_counter += 1
                 # print(f"{color.YELLOW}Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Missing data in {column_name}{color.END}")
                 Log.write(f"Unit {unit_no}: {data.iloc[index, 0]} Index {index}: Missing data in {column_name}")
-                if null_counter > 2:
-                    errors.append(f"{data.iloc[index, 0]} Index {index}: Missing data in {column_name}")
+                if null_counter > 10:
+                    errors.append(f"{data.iloc[index, 0]} Multiple missing data in {column_name}")
                 else:
                     warnings.append(f"{data.iloc[index, 0]} Index {index}: Missing data in {column_name}")
             elif float(value) < min_value or float(value) > max_value:
@@ -172,7 +172,17 @@ def check_limits(regex, data, min_value, max_value, unit_no, bad_indices):
         errors.append(f"Column not found: {regex}")
         return errors, warnings
 
-def check_activity(regex, data, min_value, max_value, unit_no, bad_indices):
+def check_activity(regex, data, unit_no):
+    errors, warnings = [], []
+    column = data.filter(regex=regex).columns[0]
+    column_name = column.lstrip("0123456789- ")
+    if pd.to_numeric(data[column]).sum(skipna=True) == 0:
+        print(f"{color.YELLOW}Unit {unit_no}: {column_name} no response - Possible Disconnection{color.END}")
+        Log.write(f"Unit {unit_no}: {column_name} no response - Possible Disconnection")
+        errors.append(f"{column_name} no response - Possible Disconnection")
+    return errors, warnings
+
+def check_pulse(regex, data, min_value, max_value, unit_no, bad_indices):
     errors, warnings = check_limits(regex, data, min_value, max_value, unit_no, bad_indices)
     if f"Unit {unit_no}: Column not found: {regex}" in errors:
         return errors, warnings
@@ -182,4 +192,36 @@ def check_activity(regex, data, min_value, max_value, unit_no, bad_indices):
         print(f"{color.YELLOW}Unit {unit_no}: {column_name} no response - Possible Disconnection{color.END}")
         Log.write(f"Unit {unit_no}: {column_name} no response - Possible Disconnection")
         errors.append(f"{column_name} no response - Possible Disconnection")
+    return errors, warnings
+
+def find_diff(regex ,data, unit_no, bad_indices):
+    column = data.filter(regex=regex).columns[0]
+    values = data[column]
+    start_index = 0
+    while pd.isna(values[start_index]) or values[start_index] == "":
+        start_index += 1
+    min_value = values[start_index]
+    max_value = values[start_index]
+    for index, value in values.items():
+        if index in bad_indices:
+            continue
+        if value == None or pd.isna(value) or value == "":  # Skip empty values
+            continue
+        if float(value) < min_value:
+            min_value = float(value)
+        if float(value) > max_value:
+            max_value = float(value)
+    diff = abs(max_value - min_value)
+    return min_value, max_value, diff
+
+
+def check_water_pulse(regex, data, min_limit, max_limit, unit_no, bad_indices):
+    errors, warnings = check_limits(regex, data, min_limit, max_limit, unit_no, bad_indices)
+    if f"Unit {unit_no}: Column not found: {regex}" in errors:
+        return errors, warnings
+    min_value, max_value, diff = find_diff(regex, data, unit_no, bad_indices)
+    if diff > 5:
+        activity_errors, activity_warnings = check_activity(regex, data, unit_no)
+        errors += activity_errors
+        warnings += activity_warnings
     return errors, warnings
