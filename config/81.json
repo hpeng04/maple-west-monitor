@@ -35,7 +35,7 @@
         "Main Electricity Gen Watts": true,
         "Main Electricity Gen Watts 1": true,
         "Main Floor Plugs Watts": true,
-        "Natural Gas": true,
+        "Natural Gas": false,
         "Office Room Plugs Watts": false,
         "PV Generation 1 Watts": true,
         "PV Generation 2 Watts": true,
