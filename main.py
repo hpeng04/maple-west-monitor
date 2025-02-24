@@ -72,9 +72,9 @@ def run_load_units():
         warnings += unit_warnings
         max_warnings = max(max_warnings, len(unit_warnings))
         # if error len > 0, then send email and log to the user
-    if len(errors) > 0 or max_warnings > MAX_WARNINGS:
-        body = compile_email_body(units)
-        send_email(subject=f"Maple West Data Quality Error(s) Detected", body=body, attachment=Log.get_path())
+    # if len(errors) > 0 or max_warnings > MAX_WARNINGS:
+    #     body = compile_email_body(units)
+    #     send_email(subject=f"Maple West Data Quality Error(s) Detected", body=body, attachment=Log.get_path())
 
 def run_download_units(save_files: bool = False):
     delete_log()
@@ -96,6 +96,9 @@ def run_download_units(save_files: bool = False):
     if len(errors) > 0 or max_warnings > MAX_WARNINGS:
         body = compile_email_body(units)
         send_email(subject=f"Maple West Data Error(s) Detected", body=body, attachment=Log.get_path())
+    else:
+        body = f"{yesterday.strftime('%Y-%m-%d')}\nData quality check passed for all units"
+        send_email(subject=f"Maple West Data Quality OK", body=body, attachment=Log.get_path())
 
 def check_missing_units():
     missing_units = {}
