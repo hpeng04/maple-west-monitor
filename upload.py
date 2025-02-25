@@ -116,9 +116,9 @@ def upload_all(combined_path):
                 for file in files:
                     if file.endswith('.csv'):
                         file_path = os.path.join(root, file)
-                        # gfile = drive.CreateFile({'title': file, 'parents': [{'id': locations[dir]}]})
-                        # gfile.SetContentFile(file_path)
-                        # gfile.Upload(param={'supportsTeamDrives': True})
+                        gfile = drive.CreateFile({'title': file, 'parents': [{'id': locations[dir]}]})
+                        gfile.SetContentFile(file_path)
+                        gfile.Upload(param={'supportsTeamDrives': True})
                         print(f"Uploaded {file} to Google Drive folder {locations[dir]} for Unit {unit_no}")
 
 def delete_all(paths:list):
