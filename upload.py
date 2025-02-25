@@ -9,6 +9,7 @@ from dateutil.relativedelta import relativedelta
 from rules import check_missing_rows
 from alert import alert_failed_downloads
 from main import download_hour
+import qualitycheck
 
 
 gauth = GoogleAuth(settings_file='./settings.yaml')
@@ -108,7 +109,7 @@ def combine_all(input_path, output_path):
                 print(f"{color.RED}Unit {unit_no} could not be combined.{color.END}")
         break
 
-def upload_all(combined_path):
+def upload_combined(combined_path):
     for _, dirs, _ in os.walk(combined_path):
         for dir in dirs:
             unit_no = dir.split(' ')[-1]
@@ -170,12 +171,38 @@ def download_failed(failed_units_path: str):
         f.writelines(new_lines)  # Write back only failed lines
     return
 
+def upload_quality_reports():
+    """Upload quality reports to Google Drive"""
+    QUALITY_REPORTS_PATH = 'quality_reports'
+    QUALITY_REPORTS_FOLDER = '1VTlQzomRsOXTUEOKfOaH94J15WApczri'
+
+    if not os.path.exists(QUALITY_REPORTS_PATH):
+        print(f"No quality reports directory found")
+        return
+
+    for file in os.listdir(QUALITY_REPORTS_PATH):
+        if file.endswith('.xlsx'):
+            file_path = os.path.join(QUALITY_REPORTS_PATH, file)
+            
+            # Check if file already exists in Drive
+            file_list = drive.ListFile({'q': f"'{QUALITY_REPORTS_FOLDER}' in parents and title='{file}'"}).GetList()
+            if file_list:
+                print(f"{file} already exists in Google Drive quality reports folder")
+                continue
+
+            # Upload file
+            gfile = drive.CreateFile({'title': file, 'parents': [{'id': QUALITY_REPORTS_FOLDER}]})
+            gfile.SetContentFile(file_path)
+            gfile.Upload(param={'supportsTeamDrives': True})
+            print(f"Uploaded {file} to Google Drive quality reports folder")
 
 if __name__ == '__main__':
     download_hour()
     download_failed(FAILED_DOWNLOAD_PATH)
     combine_all(MINUTE_PATH, OUTPUT_PATH)
     combine_all(HOUR_PATH, OUTPUT_PATH)
-    upload_all(OUTPUT_PATH)
+    upload_combined(OUTPUT_PATH)
+    qualitycheck.main()
+    upload_quality_reports()
     delete_all([MINUTE_PATH, HOUR_PATH, OUTPUT_PATH])
     alert_failed_downloads(FAILED_DOWNLOAD_PATH)
