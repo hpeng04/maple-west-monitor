@@ -193,8 +193,8 @@ class Unit:
                 self.errors += channel_errors
                 self.warnings += channel_warnings
         if len(self.errors) == 0 and len(self.warnings) == 0:
-            print(f"{color.GREEN}Unit {self.unit_no}: Passed all quality checks{color.END}")
-            Log.write(f"Unit {self.unit_no}: Passed all quality checks")
+            print(f"{color.GREEN}Unit {self.unit_no}: Passed all systems checks{color.END}")
+            Log.write(f"Unit {self.unit_no}: Passed all systems checks")
 
         if save_files:
             if not os.path.exists(f'Data/UNIT {self.unit_no}'):

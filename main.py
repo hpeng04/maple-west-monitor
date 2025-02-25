@@ -45,7 +45,7 @@ def compile_email_body(units):
     param: errors: list[str]: list of errors
     return: str: email body
     '''
-    body = f"Data errors detected in the following unit(s):\n"
+    body = f"Errors detected in the following unit(s):\n"
     error_units = set()
     for unit in units:
         if len(unit.errors) > 0 or len(unit.warnings) > MAX_WARNINGS:
@@ -95,10 +95,10 @@ def run_download_units(save_files: bool = False):
     # if error len > 0, then send email and log to the user
     if len(errors) > 0 or max_warnings > MAX_WARNINGS:
         body = compile_email_body(units)
-        send_email(subject=f"Maple West Data Error(s) Detected", body=body, attachment=Log.get_path())
+        send_email(subject=f"Maple West System Error(s) Detected", body=body, attachment=Log.get_path())
     else:
-        body = f"{yesterday.strftime('%Y-%m-%d')}\nData quality check passed for all units"
-        send_email(subject=f"Maple West Data Quality OK", body=body, attachment=Log.get_path())
+        body = f"{yesterday.strftime('%Y-%m-%d')}\nSystems check passed for all units"
+        send_email(subject=f"Maple West System OK", body=body, attachment=Log.get_path())
 
 def check_missing_units():
     missing_units = {}
