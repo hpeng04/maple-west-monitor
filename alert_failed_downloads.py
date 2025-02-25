@@ -1,5 +1,8 @@
 from alert import send_email
 
+# Monthly alert for failed downloads by emailing failed_downloads.txt to recipients
+# then clearing the file.
+
 def alert_failed_downloads(path):
     with open(path, 'r') as f:
         subject = 'Maple West Failed Downloads'
