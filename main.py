@@ -88,7 +88,7 @@ def run_download_units(save_files: bool = False):
         unit.download_minute_data()
         unit.check_status()
         unit.check_space()
-        unit_errors, unit_warnings = unit.check_quality(save_files)
+        unit_errors, unit_warnings = unit.check_quality()
         errors += unit_errors
         warnings += unit_warnings
         max_warnings = max(max_warnings, len(unit_warnings))

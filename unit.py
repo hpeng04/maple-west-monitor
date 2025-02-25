@@ -13,9 +13,8 @@ from alert import send_email
 class Unit:
     block_1 = [2804, 2806, 2808, 2810, 2812, 2814, 2816, 2818]
     block_3 = [77, 78, 79, 80, 81, 82, 83, 84, 85, 86]
-    units = block_1 + block_3
-
     stack_units = [2818, 2820, 87, 77, 86, 78]
+    units = block_1 + block_3
 
     yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
 
@@ -104,7 +103,7 @@ class Unit:
         '''
         Download data for the last day (minute data)
         '''
-        # year, month, day = map(int, current_date.split('-')) # converts date to ints
+        # date in YYYY-MM-DD format
         url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportDaily/{self.serial}/{date}'
         self._download(url)
 
@@ -167,7 +166,7 @@ class Unit:
             print("Something went wrong with status check")
         # print(status_logo)
 
-    def check_quality(self, date=yesterday, save_files:bool = False):
+    def check_quality(self, date=yesterday, save_files:bool = True):
         '''
         Check the quality of the data using the rules provided
 
@@ -197,10 +196,10 @@ class Unit:
             print(f"{color.GREEN}Unit {self.unit_no}: Passed all quality checks{color.END}")
             Log.write(f"Unit {self.unit_no}: Passed all quality checks")
 
-        if not os.path.exists(f'Data/{self.unit_no}'):
-            os.makedirs(f'Data/{self.unit_no}')
         if save_files:
-            self.data.to_csv(f'Data/{self.unit_no}/Unit_{self.unit_no}_{date}.csv', index=False)
+            if not os.path.exists(f'Data/UNIT {self.unit_no}'):
+                os.makedirs(f'Data/UNIT {self.unit_no}')
+            self.data.to_csv(f'Data/UNIT {self.unit_no}/Unit_{self.unit_no}_{str(date)}.csv', index=False)
         Log.write("\n")
         return self.errors, self.warnings
     
