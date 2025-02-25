@@ -73,14 +73,15 @@ def combine_all(input_path, output_path):
         break
 
 if __name__ == '__main__':
-    path = input("Enter the path to the folder containing the raw data or enter -1 to combine all: ")
-    if path == '-1':
-        combine_all(INPUT_PATH, OUTPUT_PATH)
-    else:
-        unit_no = input("Enter the unit number: ")
-        df = combine_csv_files(path)
-        if not df.empty:
-            save_to_csv(df, OUTPUT_PATH, unit_no)
-            print(f"Unit {unit_no} combined successfully.")
-        else:
-            print(f"{color.RED}Unit {unit_no} could not be combined.{color.END}")
+    combine_all(INPUT_PATH, OUTPUT_PATH)
+    # path = input("Enter the path to the folder containing the raw data or enter -1 to combine all: ")
+    # if path == '-1':
+    #     combine_all(INPUT_PATH, OUTPUT_PATH)
+    # else:
+    #     unit_no = input("Enter the unit number: ")
+    #     df = combine_csv_files(path)
+    #     if not df.empty:
+    #         save_to_csv(df, OUTPUT_PATH, unit_no)
+    #         print(f"Unit {unit_no} combined successfully.")
+    #     else:
+    #         print(f"{color.RED}Unit {unit_no} could not be combined.{color.END}")
