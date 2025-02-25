@@ -27,19 +27,22 @@ def find_time_step(initial_time: str, second_time: str, unit_no) -> int:
 
     # Log and print the type of data based on the time step
     if time_step == 1:
-        Log.write(f'Unit {unit_no}: Minute data detected')
-        print(f"Unit {unit_no}: Minute data detected")
+        pass
+        # Log.write(f'Unit {unit_no}: Minute data detected')
+        # print(f"Unit {unit_no}: Minute data detected")
     elif time_step == 60:
-        Log.write(f'Unit {unit_no}: Hourly data detected')
-        print(f"Unit {unit_no}: Hourly data detected")
+        pass
+        # Log.write(f'Unit {unit_no}: Hourly data detected')
+        # print(f"Unit {unit_no}: Hourly data detected")
     elif time_step == -1:
-        Log.write(f'Unit {unit_no}: Data order is reversed, Minute data detected')
-        print(f"{color.YELLOW}Unit {unit_no}: Data order is reversed, Minute data detected{color.END}")
+        Log.write(f'Unit {unit_no}: Data order is reversed')
+        print(f"{color.YELLOW}Unit {unit_no}: Data order is reversed{color.END}")
         time_step = -1
     elif time_step == -60:
-        Log.write(f'Unit {unit_no}: Data order is reversed, Hourly data detected')
-        print(f"{color.YELLOW}Unit {unit_no}: Data order is reversed, Hourly data detected{color.END}")
-        time_step = -60
+        pass
+        # Log.write(f'Unit {unit_no}: Data order is reversed, Hourly data detected')
+        # print(f"{color.YELLOW}Unit {unit_no}: Data order is reversed, Hourly data detected{color.END}")
+        # time_step = -60
     else:
         Log.write(f'Unit {unit_no}: Time step could not be determined')
         print(f"{color.YELLOW}Unit {unit_no}: Time step could not be determined{color.END}")
@@ -82,14 +85,16 @@ def check_missing_rows(data: pd.DataFrame, unit_no) -> pd.DataFrame:
             expected_time_obj = datetime.strptime(expected_time, "%Y-%m-%d %H:%M:%S")
 
             if current_time_obj < expected_time_obj:
-                Log.write(f'Unit {unit_no}: Data order error at index {index}')
-                print(f"{color.RED}Unit {unit_no}: Data order error at index {index}{color.END}")
-                errors.append(f"Unit {unit_no}: Data order error at index {index}")
-                bad_indices.append(index)
-                expected_time = str(current_time)
+                if time_step != 60:
+                    Log.write(f'Unit {unit_no}: Data order error at index {index}')
+                    print(f"{color.RED}Unit {unit_no}: Data order error at index {index}{color.END}")
+                    errors.append(f"Unit {unit_no}: Data order error at index {index}")
+                    bad_indices.append(index)
+                    expected_time = str(current_time)
                 break
-
-            Log.write(f'Unit {unit_no}: {expected_time} Index {index}: Missing all data')
+            
+            if time_step != 60:
+                Log.write(f'Unit {unit_no}: {expected_time} Index {index}: Missing all data')
             # print(f"{color.RED}Unit {unit_no}: {expected_time} Index {index}: Missing all data{color.END}")
             if counter > 4:
                 errors.append(f"Unit {unit_no}: {expected_time} Index {index}: Missing all data")

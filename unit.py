@@ -9,12 +9,21 @@ from color import color
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from alert import send_email
+from dateutil.relativedelta import relativedelta
+
+def is_float(value):
+    try:
+        float(value)
+        return True
+    except (ValueError, TypeError):
+        return False
 
 class Unit:
     block_1 = [2804, 2806, 2808, 2810, 2812, 2814, 2816, 2818]
     block_3 = [77, 78, 79, 80, 81, 82, 83, 84, 85, 86]
     stack_units = [2818, 2820, 87, 77, 86, 78]
     units = block_1 + block_3
+    datatype = ""
 
     yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
 
@@ -76,7 +85,6 @@ class Unit:
             self.errors += [f"Unit {self.unit_no}: Failed to download data from {url}"]
             yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
             Log.record_failed_downloads(self.unit_no, yesterday, url)
-            
 
     def load_data(self, path:str):
         '''
@@ -105,15 +113,16 @@ class Unit:
         '''
         # date in YYYY-MM-DD format
         url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportDaily/{self.serial}/{date}'
+        self.datatype = "Minute"
         self._download(url)
 
-    def download_hourly_data(self):
+    def download_hour_data(self):
         '''
         Download data for the last month (hourly data)
         '''
-        current_date = datetime.now().strftime('%Y-%m') # gets date in YYYY-MM format as a str
-        year, month, _ = map(int, current_date.split('-')) # converts date to ints
-        url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportMonthly/{self.serial}/{current_date}'
+        last_month = (datetime.today() - relativedelta(months=1)).strftime('%Y-%m')
+        url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportMonthly/{self.serial}/{last_month}'
+        self.datatype = "Hour"
         self._download(url)
 
     def check_space(self):
@@ -166,7 +175,7 @@ class Unit:
             print("Something went wrong with status check")
         # print(status_logo)
 
-    def check_quality(self, date=yesterday, save_files:bool = True):
+    def check_quality(self, save_files:bool, date=yesterday):
         '''
         Check the quality of the data using the rules provided
 
@@ -181,6 +190,14 @@ class Unit:
         self.data, missing_row_errors, missing_row_warnings, bad_indices = check_missing_rows(self.data, self.unit_no)
         self.errors += missing_row_errors
         self.warnings += missing_row_warnings
+
+        if (self.datatype == "Hour"):
+            if save_files:
+                last_month = (datetime.today() - relativedelta(months=1)).strftime('%Y-%m')
+                if not os.path.exists(f'{self.datatype}_Data/UNIT {self.unit_no}'):
+                    os.makedirs(f'{self.datatype}_Data/UNIT {self.unit_no}')
+                self.data.to_csv(f'{self.datatype}_Data/UNIT {self.unit_no}/Unit_{self.unit_no}_{last_month}.csv', index=False)
+            return
 
         energy_errors, energy_warnings = check_total_energy(self.data, self.unit_no)
         self.errors += energy_errors
@@ -197,15 +214,8 @@ class Unit:
             Log.write(f"Unit {self.unit_no}: Passed all systems checks")
 
         if save_files:
-            if not os.path.exists(f'Data/UNIT {self.unit_no}'):
-                os.makedirs(f'Data/UNIT {self.unit_no}')
-            self.data.to_csv(f'Data/UNIT {self.unit_no}/Unit_{self.unit_no}_{str(date)}.csv', index=False)
+            if not os.path.exists(f'{self.datatype}_Data/UNIT {self.unit_no}'):
+                os.makedirs(f'{self.datatype}_Data/UNIT {self.unit_no}')
+            self.data.to_csv(f'{self.datatype}_Data/UNIT {self.unit_no}/Unit_{self.unit_no}_{str(date)}.csv', index=False)
         Log.write("\n")
         return self.errors, self.warnings
-    
-def is_float(value):
-    try:
-        float(value)
-        return True
-    except (ValueError, TypeError):
-        return False
