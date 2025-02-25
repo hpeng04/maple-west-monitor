@@ -179,14 +179,3 @@ if __name__ == '__main__':
     upload_all(OUTPUT_PATH)
     delete_all([MINUTE_PATH, HOUR_PATH, OUTPUT_PATH])
     alert_failed_downloads(FAILED_DOWNLOAD_PATH)
-    # path = input("Enter the path to the folder containing the raw data or enter -1 to combine all: ")
-    # if path == '-1':
-    #     combine_all(INPUT_PATH, OUTPUT_PATH)
-    # else:
-    #     unit_no = input("Enter the unit number: ")
-    #     df = combine_csv_files(path)
-    #     if not df.empty:
-    #         save_to_csv(df, OUTPUT_PATH, unit_no)
-    #         print(f"Unit {unit_no} combined successfully.")
-    #     else:
-    #         print(f"{color.RED}Unit {unit_no} could not be combined.{color.END}")
