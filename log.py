@@ -22,6 +22,9 @@ class Log:
     
     @staticmethod
     def record_failed_downloads(unit_no, date, url):
+        datatype = "Minute"
+        if "Monthly" in url:
+            datatype = "Hour"
         with open(Log.missing_path, 'a') as file:
-            file.write(f'Unit {unit_no} failed download on {date}\n{url}\n\n')
+            file.write(f'{unit_no}, {datatype}, {url}\n')
         return
