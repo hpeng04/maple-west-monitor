@@ -101,6 +101,7 @@ def download_minute(save_files: bool = True):
         send_email(subject=f"Maple West Systems OK", body=body, attachment=Log.get_path())
 
 def download_hour(save_files: bool = True):
+    Log.write("--------------- HOURLY DATA ---------------\n")
     units = load_units('config/')
     for unit in units:
         unit.download_hour_data()
