@@ -23,7 +23,7 @@ class Channel:
 
 channels = {
     "A/C Watts": Channel("A/C Watts", 0, 3500, "A/C (Watts)$", check_limits),
-    "AHU Watts": Channel("AHU Watts", 0, 310, "AHU (Watts)$", check_pulse),
+    "AHU Watts": Channel("AHU Watts", 0, 400, "AHU (Watts)$", check_pulse),
     "Baseboard Heater 1 Watts": Channel("Baseboard Heater 1 Watts", 0, 2000, "Baseboard.*Heater.*1.*(Watts)$", check_limits),
     "Baseboard Heater 2 Watts": Channel("Baseboard Heater 2 Watts", 0, 2000, "Baseboard.*Heater.*2.*(Watts)$", check_limits),
     "Baseboard Heater 3 Watts": Channel("Baseboard Heater 3 Watts", 0, 2000, "Baseboard.*Heater.*3.*(Watts)$", check_limits),
