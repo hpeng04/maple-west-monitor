@@ -8,6 +8,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from rules import check_missing_rows
 from alert import alert_failed_downloads
+from main import download_hour
 
 
 gauth = GoogleAuth(settings_file='./settings.yaml')
@@ -166,6 +167,7 @@ def download_failed(failed_units_path: str):
 
 
 if __name__ == '__main__':
+    download_hour()
     download_failed(FAILED_DOWNLOAD_PATH)
     combine_all(MINUTE_PATH, OUTPUT_PATH)
     combine_all(HOUR_PATH, OUTPUT_PATH)

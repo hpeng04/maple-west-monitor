@@ -131,7 +131,7 @@ def check_missing_units():
 
 def main():
     download_minute()
-    download_hour()
+    # download_hour()
 
 if __name__ == "__main__":
     main()
