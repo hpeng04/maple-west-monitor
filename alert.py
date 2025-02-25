@@ -64,6 +64,17 @@ def send_email(subject:str, body:str, attachment=None, from_:str = email, passwo
     except Exception as e:
         print(f"{color.RED}Failed to send email: {str(e)}{color.END}")
         return False
-    
+
+def alert_failed_downloads(path):
+    # Monthly alert for failed downloads by emailing failed_downloads.txt to recipients
+    # then clearing the file.
+    with open(path, 'r+') as f:
+        subject = 'Maple West Failed Downloads'
+        body = f.read()
+        if body.strip() != "":
+            send_email(subject, body, attachment=path)
+        f.truncate(0)
+    return
+
 if __name__ == "__main__":
     send_email('Test', 'This is a test email', Log.get_path(), ['hhpeng@ualberta.ca'])
