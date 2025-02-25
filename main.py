@@ -8,7 +8,6 @@ from log import Log
 import json
 import datetime
 from color import color
-from download import download_all
 import pandas as pd
 
 MAX_WARNINGS = 25
