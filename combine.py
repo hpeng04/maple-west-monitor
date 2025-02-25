@@ -64,7 +64,7 @@ def combine_all(input_path, output_path):
             in_path = os.path.join(input_path, dir)
             out_path = os.path.join(output_path, dir)
             unit_no = dir.split('_')[-1]
-            df = combine_csv_files(in_path, unit_no)
+            df = combine_csv_files(in_path)
             if not df.empty:
                 save_to_csv(df, out_path, unit_no)
                 print(f"Unit {unit_no} combined successfully.")
