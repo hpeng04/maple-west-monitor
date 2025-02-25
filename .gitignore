@@ -1,6 +1,8 @@
 email_cred.txt
 log.txt
-Data/
+Minute_Data/
+Hour_Data/
+Logs/
 failed_downloads.txt
 credentials.json
 client_secrets.json
