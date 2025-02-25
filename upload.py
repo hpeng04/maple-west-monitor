@@ -155,12 +155,12 @@ def download_failed(failed_units_path: str):
             if line.strip() == "":
                 continue  # Skip empty lines
             try:
-                unit_no, datatype, url = line.strip().split(',')
+                unit_no, datatype, url = line.strip().split(', ')
                 print(f"Attempting to download Unit {unit_no}, {datatype} from {url}")
                 data = fix_order(pd.read_csv(url, header=0, on_bad_lines='skip'))
                 data, _, _, _ = check_missing_rows(data, unit_no)
-                date = url.split('/')[-1]
-                data.to_csv(f'{datatype}_Data/UNIT {unit_no}/Unit_{unit_no}_{date}.csv', index=False)
+                date = url.split('/')[-1].strip()
+                data.to_csv(f'{datatype}_Data/UNIT {str(unit_no)}/Unit_{str(unit_no)}_{str(date)}.csv', index=False)
                 print(f"{color.GREEN}Download successful{color.END}")
             except:
                 print(f"{color.RED}Unit {unit_no} could not be downloaded from {url}{color.END}")
