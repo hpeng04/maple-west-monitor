@@ -117,6 +117,11 @@ def upload_all(combined_path):
                 for file in files:
                     if file.endswith('.csv'):
                         file_path = os.path.join(root, file)
+                        # Check if the file already exists on Google Drive
+                        file_list = drive.ListFile({'q': f"'{locations[dir]}' in parents and trashed=false"}).GetList()
+                        if any(f['title'] == file for f in file_list):
+                            print(f"{file} already exists in Google Drive folder {locations[dir]} for Unit {unit_no}")
+                            continue
                         gfile = drive.CreateFile({'title': file, 'parents': [{'id': locations[dir]}]})
                         gfile.SetContentFile(file_path)
                         gfile.Upload(param={'supportsTeamDrives': True})
