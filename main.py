@@ -76,7 +76,7 @@ def run_load_units():
     #     body = compile_email_body(units)
     #     send_email(subject=f"Maple West Data Quality Error(s) Detected", body=body, attachment=Log.get_path())
 
-def run_download_units(save_files: bool = False):
+def download_minute(save_files: bool = True):
     delete_log()
     yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
     Log.write(f"{yesterday.strftime('%Y-%m-%d')}\n")
@@ -88,7 +88,7 @@ def run_download_units(save_files: bool = False):
         unit.download_minute_data()
         unit.check_status()
         unit.check_space()
-        unit_errors, unit_warnings = unit.check_quality()
+        unit_errors, unit_warnings = unit.check_quality(save_files)
         errors += unit_errors
         warnings += unit_warnings
         max_warnings = max(max_warnings, len(unit_warnings))
@@ -98,8 +98,16 @@ def run_download_units(save_files: bool = False):
         send_email(subject=f"Maple West System Error(s) Detected", body=body, attachment=Log.get_path())
     else:
         body = f"{yesterday.strftime('%Y-%m-%d')}\nSystems check passed for all units"
-        send_email(subject=f"Maple West System OK", body=body, attachment=Log.get_path())
+        send_email(subject=f"Maple West Systems OK", body=body, attachment=Log.get_path())
 
+def download_hour(save_files: bool = True):
+    units = load_units('config/')
+    for unit in units:
+        unit.download_hour_data()
+        unit.check_quality(save_files)
+    return
+
+### DEPRECATED
 def check_missing_units():
     missing_units = {}
     units = load_units('config/')
@@ -122,8 +130,8 @@ def check_missing_units():
         print(f"{color.RED}Missing data file not found{color.END}")
 
 def main():
-    # download_all() # Separate independent function from the quality checking program
-    run_download_units()
+    download_minute()
+    download_hour()
 
 if __name__ == "__main__":
     main()
