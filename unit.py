@@ -26,6 +26,7 @@ class Unit:
     datatype = ""
 
     yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
+    last_month = (datetime.today() - relativedelta(months=1)).strftime('%Y-%m')
 
     def __init__(self, unit_no: int, block: int, ip_address: str, port: str, serial:str, channels:dict, data:pd.DataFrame = None):
         self.unit_no = unit_no
@@ -55,14 +56,24 @@ class Unit:
 
     def _fix_order(self, df:pd.DataFrame):
         '''
-        Sort the data is ascending order of time if not already sorted
+        Sort the data in ascending order of time if not already sorted
 
         param: df: pd.DataFrame: data to be sorted
         return: pd.DataFrame: sorted data
         '''
-        if df.iloc[0, 0] > df.iloc[1, 0]:
-            return df.iloc[::-1]
-        else:
+        if df is None or df.empty or len(df) < 2:
+            return df
+            
+        try:
+            # Convert first column to datetime for proper comparison
+            timestamps = pd.to_datetime(df.iloc[:, 0])
+            if timestamps.iloc[0] > timestamps.iloc[1]:
+                return df.iloc[::-1].reset_index(drop=True)
+            return df
+        except (ValueError, pd.errors.ParserError) as e:
+            print(f"{color.RED}Error parsing timestamps: {str(e)}{color.END}")
+            Log.write(f"Unit {self.unit_no}: Error parsing timestamps: {str(e)}")
+            self.errors.append(f"Unit {self.unit_no}: Error parsing timestamps: {str(e)}")
             return df
 
     def _natural_sort_key(self, s):
@@ -77,14 +88,27 @@ class Unit:
         Log.write(f"Downloading Unit {self.unit_no}: {self.ip_address}:{self.port}")
         print(f"Downloading Unit {self.unit_no}: {self.ip_address}:{self.port}")
         try:
-            self.data = self._fix_order(pd.read_csv(url, header=0, on_bad_lines='skip'))
-        except:
-            Log.write(f"Unit {self.unit_no}: Failed to download data from {url}\n\n")
-            print(f"{color.RED}Unit {self.unit_no}: Failed to download data from {url}{color.END}")
+            response = pd.read_csv(url, header=0, on_bad_lines='skip')
+            if response.empty:
+                raise ValueError("Downloaded data is empty")
+            self.data = self._fix_order(response)
+            print(f"Downloaded data for Unit {self.unit_no}")
+        except (pd.errors.EmptyDataError, ValueError) as e:
+            Log.write(f"Unit {self.unit_no}: Empty data from {url}\n\n")
+            print(f"{color.RED}Unit {self.unit_no}: Empty data from {url}{color.END}")
             self.data = None
-            self.errors += [f"Unit {self.unit_no}: Failed to download data from {url}"]
-            yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
-            Log.record_failed_downloads(self.unit_no, yesterday, url)
+            self.errors.append(f"Unit {self.unit_no}: Empty data from {url}")
+            # Extract date from URL for failed downloads log
+            date = url.split('/')[-1]
+            Log.record_failed_downloads(self.unit_no, date, url)
+        except Exception as e:
+            Log.write(f"Unit {self.unit_no}: Failed to download data from {url}: {str(e)}\n\n")
+            print(f"{color.RED}Unit {self.unit_no}: Failed to download data from {url}: {str(e)}{color.END}")
+            self.data = None
+            self.errors.append(f"Unit {self.unit_no}: Failed to download data from {url}")
+            # Extract date from URL for failed downloads log
+            date = url.split('/')[-1]
+            Log.record_failed_downloads(self.unit_no, date, url)
 
     def load_data(self, path:str):
         '''
@@ -116,12 +140,13 @@ class Unit:
         self.datatype = "Minute"
         self._download(url)
 
-    def download_hour_data(self):
+    def download_hour_data(self, date=last_month):
         '''
-        Download data for the last month (hourly data)
+        Download data for the specified month (hourly data)
+        
+        param: date: str: date in YYYY-MM format
         '''
-        last_month = (datetime.today() - relativedelta(months=1)).strftime('%Y-%m')
-        url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportMonthly/{self.serial}/{last_month}'
+        url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportMonthly/{self.serial}/{date}'
         self.datatype = "Hour"
         self._download(url)
 
