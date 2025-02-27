@@ -197,10 +197,10 @@ def upload_quality_reports():
             print(f"Uploaded {file} to Google Drive quality reports folder")
 
 if __name__ == '__main__':
-    download_hour()
+    # download_hour()
     download_failed(FAILED_DOWNLOAD_PATH)
     combine_all(MINUTE_PATH, OUTPUT_PATH)
-    combine_all(HOUR_PATH, OUTPUT_PATH)
+    # combine_all(HOUR_PATH, OUTPUT_PATH)
     upload_combined(OUTPUT_PATH)
     qualitycheck.main()
     upload_quality_reports()
