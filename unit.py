@@ -220,8 +220,8 @@ class Unit:
             if save_files:
                 last_month = (datetime.today() - relativedelta(months=1)).strftime('%Y-%m')
                 if not os.path.exists(f'{self.datatype}_Data/UNIT {self.unit_no}'):
-                    os.makedirs(f'{self.datatype}_Data/UNIT {self.unit_no}')
-                self.data.to_csv(f'{self.datatype}_Data/UNIT {self.unit_no}/Unit_{self.unit_no}_{last_month}.csv', index=False)
+                    os.makedirs(f'./{self.datatype}_Data/UNIT {self.unit_no}')
+                self.data.to_csv(f'./{self.datatype}_Data/UNIT {self.unit_no}/Unit_{self.unit_no}_{last_month}.csv', index=False)
             return
 
         energy_errors, energy_warnings = check_total_energy(self.data, self.unit_no)
