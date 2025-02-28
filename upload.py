@@ -10,9 +10,15 @@ from rules import check_missing_rows
 from alert import alert_failed_downloads
 from main import download_hour
 import qualitycheck
+from oauth2client.service_account import ServiceAccountCredentials
 
 
-gauth = GoogleAuth(settings_file='./settings.yaml')
+SERVICE_ACCOUNT_JSON = 'service_account.json'
+SCOPES = ['https://www.googleapis.com/auth/drive']
+
+credentials = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_ACCOUNT_JSON, SCOPES)
+gauth = GoogleAuth()
+gauth.credentials = credentials
 drive = GoogleDrive(gauth)
 
 MINUTE_PATH = './Minute_Data'
