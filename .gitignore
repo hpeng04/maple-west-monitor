@@ -8,3 +8,4 @@ credentials.json
 client_secrets.json
 settings.yaml
 email_list.txt
+service_account.json
