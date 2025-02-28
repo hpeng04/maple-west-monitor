@@ -205,10 +205,10 @@ def upload_quality_reports():
 if __name__ == '__main__':
     # download_hour()
     download_failed(FAILED_DOWNLOAD_PATH)
+    qualitycheck.main()
     combine_all(MINUTE_PATH, OUTPUT_PATH)
     # combine_all(HOUR_PATH, OUTPUT_PATH)
     upload_combined(OUTPUT_PATH)
-    qualitycheck.main()
     upload_quality_reports()
     delete_all([MINUTE_PATH, HOUR_PATH, OUTPUT_PATH])
     alert_failed_downloads(FAILED_DOWNLOAD_PATH)
