@@ -239,8 +239,8 @@ class Unit:
             Log.write(f"Unit {self.unit_no}: Passed all systems checks")
 
         if save_files:
-            if not os.path.exists(f'{self.datatype}_Data/UNIT {self.unit_no}'):
-                os.makedirs(f'{self.datatype}_Data/UNIT {self.unit_no}')
-            self.data.to_csv(f'{self.datatype}_Data/UNIT {self.unit_no}/Unit_{self.unit_no}_{str(date)}.csv', index=False)
+            if not os.path.exists(f'./{self.datatype}_Data/UNIT {self.unit_no}'):
+                os.makedirs(f'./{self.datatype}_Data/UNIT {self.unit_no}')
+            self.data.to_csv(f'./{self.datatype}_Data/UNIT {self.unit_no}/Unit_{self.unit_no}_{str(date)}.csv', index=False)
         Log.write("\n")
         return self.errors, self.warnings

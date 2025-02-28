@@ -3,8 +3,8 @@ import pandas as pd
 import os
 
 class Log:
-    path = r'Logs/'
-    missing_path = r'failed_downloads.txt'
+    path = r'./Logs/'
+    missing_path = r'./failed_downloads.txt'
     yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
 
     @staticmethod

@@ -18,7 +18,7 @@ drive = GoogleDrive(gauth)
 MINUTE_PATH = './Minute_Data'
 HOUR_PATH = './Hour_Data'
 OUTPUT_PATH = './Combined_Data'
-FAILED_DOWNLOAD_PATH = 'failed_downloads.txt'
+FAILED_DOWNLOAD_PATH = './failed_downloads.txt'
 
 locations = {
     "UNIT 77": "1lDSBeFE5p9snL9rHBVBzsnQcX_0YV5Ju",
@@ -161,7 +161,7 @@ def download_failed(failed_units_path: str):
                 data = fix_order(pd.read_csv(url, header=0, on_bad_lines='skip'))
                 data, _, _, _ = check_missing_rows(data, unit_no)
                 date = url.split('/')[-1].strip()
-                data.to_csv(f'{datatype}_Data/UNIT {str(unit_no)}/Unit_{str(unit_no)}_{str(date)}.csv', index=False)
+                data.to_csv(f'./{datatype}_Data/UNIT {str(unit_no)}/Unit_{str(unit_no)}_{str(date)}.csv', index=False)
                 print(f"{color.GREEN}Download successful{color.END}")
             except:
                 print(f"{color.RED}Unit {unit_no} could not be downloaded from {url}{color.END}")
@@ -173,7 +173,7 @@ def download_failed(failed_units_path: str):
 
 def upload_quality_reports():
     """Upload quality reports to Google Drive"""
-    QUALITY_REPORTS_PATH = 'quality_reports'
+    QUALITY_REPORTS_PATH = './quality_reports'
     QUALITY_REPORTS_FOLDER = '1VTlQzomRsOXTUEOKfOaH94J15WApczri'
 
     if not os.path.exists(QUALITY_REPORTS_PATH):
