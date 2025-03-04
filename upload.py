@@ -25,6 +25,8 @@ MINUTE_PATH = './Minute_Data'
 HOUR_PATH = './Hour_Data'
 OUTPUT_PATH = './Combined_Data'
 FAILED_DOWNLOAD_PATH = './failed_downloads.txt'
+QUALITY_REPORTS_PATH = './quality_reports'
+QUALITY_REPORTS_FOLDER = '1VTlQzomRsOXTUEOKfOaH94J15WApczri'
 
 locations = {
     "UNIT 77": "1lDSBeFE5p9snL9rHBVBzsnQcX_0YV5Ju",
@@ -179,11 +181,8 @@ def download_failed(failed_units_path: str):
 
 def upload_quality_reports():
     """Upload quality reports to Google Drive"""
-    QUALITY_REPORTS_PATH = './quality_reports'
-    QUALITY_REPORTS_FOLDER = '1VTlQzomRsOXTUEOKfOaH94J15WApczri'
-
     if not os.path.exists(QUALITY_REPORTS_PATH):
-        print(f"No quality reports directory found")
+        os.makedirs(QUALITY_REPORTS_PATH)
         return
 
     for file in os.listdir(QUALITY_REPORTS_PATH):
@@ -210,5 +209,5 @@ if __name__ == '__main__':
     # combine_all(HOUR_PATH, OUTPUT_PATH)
     upload_combined(OUTPUT_PATH)
     upload_quality_reports()
-    delete_all([MINUTE_PATH, HOUR_PATH, OUTPUT_PATH])
+    delete_all([MINUTE_PATH, HOUR_PATH, OUTPUT_PATH, QUALITY_REPORTS_PATH])
     alert_failed_downloads(FAILED_DOWNLOAD_PATH)
