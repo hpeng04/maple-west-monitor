@@ -192,8 +192,9 @@ def upload_quality_reports():
             # Check if file already exists in Drive
             file_list = drive.ListFile({'q': f"'{QUALITY_REPORTS_FOLDER}' in parents and title='{file}'"}).GetList()
             if file_list:
-                print(f"{file} already exists in Google Drive quality reports folder")
-                continue
+                file_list[0].Delete()
+                # print(f"{file} already exists in Google Drive quality reports folder")
+                # continue
 
             # Upload file
             gfile = drive.CreateFile({'title': file, 'parents': [{'id': QUALITY_REPORTS_FOLDER}]})
@@ -209,5 +210,5 @@ if __name__ == '__main__':
     # combine_all(HOUR_PATH, OUTPUT_PATH)
     upload_combined(OUTPUT_PATH)
     upload_quality_reports()
-    delete_all([MINUTE_PATH, HOUR_PATH, OUTPUT_PATH, QUALITY_REPORTS_PATH])
+    delete_all([MINUTE_PATH, HOUR_PATH, OUTPUT_PATH])
     alert_failed_downloads(FAILED_DOWNLOAD_PATH)
