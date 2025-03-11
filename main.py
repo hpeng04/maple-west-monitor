@@ -9,6 +9,7 @@ import json
 import datetime
 from color import color
 import pandas as pd
+from download_daily import download_all, delete_data_folder
 
 MAX_WARNINGS = 25
 
@@ -130,6 +131,8 @@ def check_missing_units():
         print(f"{color.RED}Missing data file not found{color.END}")
 
 def main():
+    # download_all() ### Disabled for now until service account has access to Maple West Data shared drive
+    # delete_data_folder()
     download_minute()
     # download_hour()
 

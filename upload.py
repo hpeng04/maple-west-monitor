@@ -25,6 +25,8 @@ MINUTE_PATH = './Minute_Data'
 HOUR_PATH = './Hour_Data'
 OUTPUT_PATH = './Combined_Data'
 FAILED_DOWNLOAD_PATH = './failed_downloads.txt'
+QUALITY_REPORTS_PATH = './quality_reports'
+QUALITY_REPORTS_FOLDER = '1VTlQzomRsOXTUEOKfOaH94J15WApczri'
 
 locations = {
     "UNIT 77": "1lDSBeFE5p9snL9rHBVBzsnQcX_0YV5Ju",
@@ -179,11 +181,8 @@ def download_failed(failed_units_path: str):
 
 def upload_quality_reports():
     """Upload quality reports to Google Drive"""
-    QUALITY_REPORTS_PATH = './quality_reports'
-    QUALITY_REPORTS_FOLDER = '1VTlQzomRsOXTUEOKfOaH94J15WApczri'
-
     if not os.path.exists(QUALITY_REPORTS_PATH):
-        print(f"No quality reports directory found")
+        os.makedirs(QUALITY_REPORTS_PATH)
         return
 
     for file in os.listdir(QUALITY_REPORTS_PATH):
@@ -193,8 +192,9 @@ def upload_quality_reports():
             # Check if file already exists in Drive
             file_list = drive.ListFile({'q': f"'{QUALITY_REPORTS_FOLDER}' in parents and title='{file}'"}).GetList()
             if file_list:
-                print(f"{file} already exists in Google Drive quality reports folder")
-                continue
+                file_list[0].Delete()
+                # print(f"{file} already exists in Google Drive quality reports folder")
+                # continue
 
             # Upload file
             gfile = drive.CreateFile({'title': file, 'parents': [{'id': QUALITY_REPORTS_FOLDER}]})
