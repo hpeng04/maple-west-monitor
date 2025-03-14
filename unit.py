@@ -66,7 +66,7 @@ class Unit:
             
         try:
             # Convert first column to datetime for proper comparison
-            timestamps = pd.to_datetime(df.iloc[:, 0])
+            timestamps = pd.to_datetime(df.iloc[:, 0], format='%Y-%m-%d %H:%M:%S')
             if timestamps.iloc[0] > timestamps.iloc[1]:
                 return df.iloc[::-1].reset_index(drop=True)
             return df
