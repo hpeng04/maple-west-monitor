@@ -109,6 +109,7 @@ class Unit:
             # Extract date from URL for failed downloads log
             date = url.split('/')[-1]
             Log.record_failed_downloads(self.unit_no, date, url)
+            Log.write(f"Unit {self.unit_no}:  Failed download recorded in failed_downloads.txt")
 
     def load_data(self, path:str):
         '''
@@ -178,25 +179,28 @@ class Unit:
         Check the status of the dashbox
         '''
         url = f'http://{self.ip_address}:{self.port}/index.php/powerdisplay/getmainwatts'
-        page = urlopen(url)
-        html_bytes = page.read()
-        html = html_bytes.decode("utf-8")
-        soup = BeautifulSoup(html, 'html.parser')
-        status_logo = soup.find("img")
-        # print(status_logo)
-        if status_logo:
-            img_src = status_logo['src']
-            # print(img_src)
-            if 'green' in img_src:
-                Log.write(f"Unit {self.unit_no}: Dashbox Status OK")
-                print(f"{color.GREEN}Unit {self.unit_no}: Dashbox Status OK{color.END}")
-            else:
-                Log.write(f"Unit {self.unit_no}: Dashbox Status Error")
-                print(f"{color.RED}Unit {self.unit_no}: Dashbox Status Error{color.END}")
-                body = f"Unit {self.unit_no}: Dashbox Status Error\n\nhttp://{self.ip_address}:{self.port}"
-                send_email(subject=f"Maple West Dashbox Status Errors Detected", body=body)
-                # self.errors.append(f"Unit {self.unit_no}: Dashbox Status Error")
-        else:
+        try:
+            page = urlopen(url)
+            html_bytes = page.read()
+            html = html_bytes.decode("utf-8")
+            soup = BeautifulSoup(html, 'html.parser')
+            status_logo = soup.find("img")
+            # print(status_logo)
+            if status_logo:
+                img_src = status_logo['src']
+                # print(img_src)
+                if 'green' in img_src:
+                    Log.write(f"Unit {self.unit_no}: Dashbox Status OK")
+                    print(f"{color.GREEN}Unit {self.unit_no}: Dashbox Status OK{color.END}")
+                else:
+                    Log.write(f"Unit {self.unit_no}: Dashbox Status Error")
+                    print(f"{color.RED}Unit {self.unit_no}: Dashbox Status Error{color.END}")
+                    body = f"Unit {self.unit_no}: Dashbox Status Error\n\nhttp://{self.ip_address}:{self.port}"
+                    send_email(subject=f"Maple West Dashbox Status Errors Detected", body=body)
+                    # self.errors.append(f"Unit {self.unit_no}: Dashbox Status Error")
+        except Exception as e:
+            Log.write(f"Unit {self.unit_no}: Something went wrong with status check")
+            self.errors.append(f"Unit {self.unit_no}: Something went wrong with status check")
             print("Something went wrong with status check")
         # print(status_logo)
 
