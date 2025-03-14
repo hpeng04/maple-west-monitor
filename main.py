@@ -108,28 +108,6 @@ def download_hour(save_files: bool = True):
         unit.check_quality(save_files)
     return
 
-### DEPRECATED
-def check_missing_units():
-    missing_units = {}
-    units = load_units('config/')
-    missing_data_path = 'missing_data.txt'
-    if os.path.exists(missing_data_path):
-        missing_data_df = pd.read_csv(missing_data_path)
-        for _, row in missing_data_df.iterrows():
-            unit_no = row['unit_no']
-            if unit_no not in [unit.unit_no for unit in units]:
-                missing_units[unit_no] = row.to_dict()
-    if len(missing_units) > 0:
-        print("Attempting to download missing data")
-        for unit_no, date in missing_units.items():
-            print(f"Downloading {unit_no} for {date} (WIP)")
-            # download data for unit_no and date
-            # if successful, remove from missing_data.txt
-            # if not successful, log error
-            pass
-    else:
-        print(f"{color.RED}Missing data file not found{color.END}")
-
 def main():
     # download_all() ### Disabled for now until service account has access to Maple West Data shared drive
     # delete_data_folder()
