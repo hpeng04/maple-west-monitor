@@ -156,23 +156,28 @@ class Unit:
         Check the space available on the sd card
         '''
         url = f'http://{self.ip_address}:{self.port}/index.php/powerdisplay/getmainwatts'
-        page = urlopen(url)
-        html_bytes = page.read()
-        html = html_bytes.decode("utf-8")
-        soup = BeautifulSoup(html, 'html.parser')
-        outer_span = soup.find_all("span", title='\\"Total')[-1]
-        
-        inner_span = outer_span.find("span")
-        space = inner_span.text.split('<')[0]
-        if is_float(space) and float(space) > 1 and float(space) < 40:
-            Log.write(f"Unit {self.unit_no}: {space} GB left on the SD card")
-            print(f"Unit {self.unit_no}: {space} GB left on the SD card")
-        else:
-            # self.errors += [f"Unit {self.unit_no}: Less than 1GB of space available on the SD card"]
-            Log.write(f"Unit {self.unit_no}: Less than 1GB of space available on the SD card: {space} GB")
-            print(f"{color.RED}Unit {self.unit_no}: {space} GB left on the SD card, clear storage{color.END}")
-            body = f"Unit {self.unit_no}: Less than 1GB of space available on the SD card\n\n{space} GB left\n\nhttp://{self.ip_address}:{self.port}"
-            send_email(subject=f"Maple West SD Card Storage Almost Full", body=body)
+        try:
+            page = urlopen(url)
+            html_bytes = page.read()
+            html = html_bytes.decode("utf-8")
+            soup = BeautifulSoup(html, 'html.parser')
+            outer_span = soup.find_all("span", title='\\"Total')[-1]
+            
+            inner_span = outer_span.find("span")
+            space = inner_span.text.split('<')[0]
+            if is_float(space) and float(space) > 1 and float(space) < 40:
+                Log.write(f"Unit {self.unit_no}: {space} GB left on the SD card")
+                print(f"Unit {self.unit_no}: {space} GB left on the SD card")
+            else:
+                # self.errors += [f"Unit {self.unit_no}: Less than 1GB of space available on the SD card"]
+                Log.write(f"Unit {self.unit_no}: Less than 1GB of space available on the SD card: {space} GB")
+                print(f"{color.RED}Unit {self.unit_no}: {space} GB left on the SD card, clear storage{color.END}")
+                body = f"Unit {self.unit_no}: Less than 1GB of space available on the SD card\n\n{space} GB left\n\nhttp://{self.ip_address}:{self.port}"
+                send_email(subject=f"Maple West SD Card Storage Almost Full", body=body)
+        except Exception as e:
+            Log.write(f"Unit {self.unit_no}: Something went wrong with storage check")
+            self.errors.append(f"Unit {self.unit_no}: Something went wrong with storage check")
+            print(f"{color.RED}Something went wrong with storage check{color.END}")
 
     def check_status(self):
         '''
@@ -201,7 +206,7 @@ class Unit:
         except Exception as e:
             Log.write(f"Unit {self.unit_no}: Something went wrong with status check")
             self.errors.append(f"Unit {self.unit_no}: Something went wrong with status check")
-            print("Something went wrong with status check")
+            print(f"{color.RED}Something went wrong with status check{color.END}")
         # print(status_logo)
 
     def check_quality(self, save_files:bool, date=yesterday):
