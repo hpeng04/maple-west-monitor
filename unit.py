@@ -184,6 +184,7 @@ class Unit:
         Check the status of the dashbox
         '''
         url = f'http://{self.ip_address}:{self.port}/index.php/powerdisplay/getmainwatts'
+        body = f"Unit {self.unit_no}: Dashbox Status Error\n\nhttp://{self.ip_address}:{self.port}"
         try:
             page = urlopen(url)
             html_bytes = page.read()
@@ -200,12 +201,12 @@ class Unit:
                 else:
                     Log.write(f"Unit {self.unit_no}: Dashbox Status Error")
                     print(f"{color.RED}Unit {self.unit_no}: Dashbox Status Error{color.END}")
-                    body = f"Unit {self.unit_no}: Dashbox Status Error\n\nhttp://{self.ip_address}:{self.port}"
                     send_email(subject=f"Maple West Dashbox Status Errors Detected", body=body)
                     # self.errors.append(f"Unit {self.unit_no}: Dashbox Status Error")
         except Exception as e:
             Log.write(f"Unit {self.unit_no}: Something went wrong with status check")
             self.errors.append(f"Unit {self.unit_no}: Something went wrong with status check")
+            send_email(subject=f"Maple West Dashbox Status Errors Detected", body=body)
             print(f"{color.RED}Something went wrong with status check{color.END}")
         # print(status_logo)
 
