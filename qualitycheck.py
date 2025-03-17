@@ -116,7 +116,7 @@ class QualityChecker:
                     print(f"Error processing file {file}: {str(e)}")
                     continue
                             
-        return results
+        return results # results[channel] = [good, missing, bad]
 
     def update_quality_report(self, data_type='Minute'):
         """Update quality reports for all units"""
