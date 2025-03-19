@@ -9,6 +9,8 @@ class Log:
 
     @staticmethod
     def write(message, date=yesterday):
+        if "Unit -1:" in message:
+            return
         if not os.path.exists(Log.path):
             os.makedirs(Log.path)
         path = Log.path + date + '.txt'
