@@ -8,7 +8,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from rules import check_missing_rows
 from alert import alert_failed_downloads
-from main import download_hour
+from daily import download_hour
 import qualitycheck
 from oauth2client.service_account import ServiceAccountCredentials
 
