@@ -78,62 +78,6 @@ class QualityChecker:
             return "Good: 0, Missing: 0, Bad: 0"
         return f"Good: {counts[0]}, Missing: {counts[1]}, Bad: {counts[2]}"
 
-    # def _apply_conditional_formatting(self, worksheet):
-    #     """Apply conditional formatting to cells based on missing + bad percentage"""
-        # for row in worksheet.iter_rows(min_row=2):  # Skip header row
-        #     for cell in row[1:]:  # Skip date column
-        #         if cell.value:
-        #             # Extract counts from the formatted string
-        #             parts = cell.value.split(', ')
-        #             good = int(parts[0].split(': ')[1])
-        #             missing = int(parts[1].split(': ')[1])
-        #             bad = int(parts[2].split(': ')[1])
-                    
-        #             total = good + missing + bad
-        #             if total > 0:
-        #                 problem_percentage = (missing + bad) / total * 100
-        #                 if problem_percentage > 5:
-        #                     cell.fill = self.red_fill
-        #                 elif problem_percentage > 1:
-        #                     cell.fill = self.yellow_fill
-
-    # def process_data(self, data_path, unit_no, month, data_type):
-    #     """Process data for a specific unit and month"""
-    #     unit_config = self.units[unit_no]
-    #     results = {}
-        
-    #     # Initialize results for all channels
-    #     for channel_name in channels.keys():
-    #         if unit_config['channels'].get(channel_name, False):
-    #             results[channel_name] = [0, 0, 0]  # [good, missing, bad]
-                
-    #     # Read all CSV files for the unit and month
-    #     unit_path = os.path.join(data_path, f'UNIT {unit_no}')
-    #     if not os.path.exists(unit_path):
-    #         return None
-            
-    #     for file in os.listdir(unit_path):
-    #         # Check if file matches the data type and month
-    #         if data_type in file and month in file and file.endswith('.csv'):
-    #             try:
-    #                 data = pd.read_csv(os.path.join(unit_path, file))
-                    
-    #                 # Check quality for each channel
-    #                 _, _, _, missing_indices = check_missing_rows(data, -1)
-    #                 num_missing = len(missing_indices)
-    #                 for channel_name in channels.keys():
-    #                     results[channel_name][1] += num_missing
-    #                     if unit_config['channels'].get(channel_name, False):
-    #                         quality = self._check_data_quality(data, unit_config, channel_name) # quality -> [good, missing, bad]
-    #                         if quality:
-    #                             results[channel_name] = [x + y for x, y in zip(results[channel_name], quality)]
-                
-    #             except Exception as e:
-    #                 print(f"Error processing file {file}: {str(e)}")
-    #                 continue
-                            
-    #     return results # results[channel] = [good, missing, bad]
-
     def update_quality_report(self, data_type='Minute'):
         """Update quality reports for all units"""
         data_path = f'{data_type}_Data'  # Use Minute_Data or Hour_Data
@@ -280,32 +224,10 @@ class QualityChecker:
             # Function to apply formatting based on percentage
             def apply_formatting_to_sheet(worksheet):
                 color_scale_rule = ColorScaleRule(
-                    start_type="min", start_color="FF0000",  # Red
-                    end_type="max", end_color="FFFFFF"       # White
+                    start_type="min", start_color="FFFFFF",  # White
+                    end_type="max", end_color="FF0000"       # Red
                 )
                 worksheet.conditional_formatting.add(table_range, color_scale_rule)
-                # for row in worksheet.iter_rows(min_row=2):  # Skip header row
-                #     for cell in row[1:]:  # Skip date column
-                #         if cell.value is not None:
-                #             try:
-                #                 value = float(cell.value)
-                #                 # Calculate total points based on data type
-                #                 date_str = worksheet.cell(row=cell.row, column=1).value
-                #                 if date_str:
-                #                     if data_type == 'Minute':
-                #                         total_points = 1440  # Points per day for minute data
-                #                     else:
-                #                         year, month = map(int, date_str.split('-'))
-                #                         days_in_month = calendar.monthrange(year, month)[1]
-                #                         total_points = days_in_month * 24  # Points per month for hour data
-                                        
-                #                     percentage = (value / total_points) * 100
-                #                     if percentage > 5:
-                #                         cell.fill = self.red_fill
-                #                     elif percentage > 1:
-                #                         cell.fill = self.yellow_fill
-                #             except (ValueError, TypeError):
-                #                 continue
             
             # Apply formatting to both sheets
             for sheet_name in ['Bad Values', 'Missing Values']:
@@ -319,7 +241,7 @@ class QualityChecker:
 def main():
     checker = QualityChecker()
     checker.update_quality_report('Minute')
-    checker.update_quality_report('Hour')
+    # checker.update_quality_report('Hour')
 
 if __name__ == "__main__":
     main()
