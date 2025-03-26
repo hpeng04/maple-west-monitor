@@ -146,12 +146,13 @@ class Unit:
         '''
         if os.path.isdir(path):
             for dir_name in os.listdir(path):
-                if dir_name == f'{self.unit_no}':
+                if f'{self.unit_no}' in dir_name:
                     dir_path = os.path.join(path, dir_name)
                     all_files = [os.path.join(dir_path, f) for f in os.listdir(dir_path) if (os.path.isfile(os.path.join(dir_path, f)) and f.endswith('.csv'))]
                     all_files.sort(key=self._natural_sort_key)
                     all_files = [self._sort_data(pd.read_csv(f)) for f in all_files]
-                    self.data = pd.concat((f for f in all_files), ignore_index=True)
+                    if len(all_files) > 0:
+                        self.data = pd.concat((f for f in all_files), ignore_index=True)
         else:
             self.data = self._sort_data(pd.read_csv(path))
         if self.data is None:
