@@ -54,26 +54,52 @@ class Unit:
     def __hash__(self):
         return hash(self.unit_no)
 
-    def _fix_order(self, df:pd.DataFrame):
-        '''
-        Sort the data in ascending order of time if not already sorted
+    ## Deprecated: Replaced by _sort_data
+    # def _fix_order(self, df:pd.DataFrame):
+    #     '''
+    #     Sort the data in ascending order of time if not already sorted
 
-        param: df: pd.DataFrame: data to be sorted
-        return: pd.DataFrame: sorted data
-        '''
+    #     param: df: pd.DataFrame: data to be sorted
+    #     return: pd.DataFrame: sorted data
+    #     '''
+    #     if df is None or df.empty or len(df) < 2:
+    #         return df
+            
+    #     try:
+    #         # Convert first column to datetime for proper comparison
+    #         timestamps = pd.to_datetime(df.iloc[:, 0], format='%Y-%m-%d %H:%M:%S')
+    #         if timestamps.iloc[0] > timestamps.iloc[1]:
+    #             return df.iloc[::-1].reset_index(drop=True)
+    #         return df
+    #     except (ValueError, pd.errors.ParserError) as e:
+    #         print(f"{color.RED}Error parsing timestamps: {str(e)}{color.END}")
+    #         Log.write(f"Unit {self.unit_no}: Error parsing timestamps: {str(e)}")
+    #         self.errors.append(f"Unit {self.unit_no}: Error parsing timestamps: {str(e)}")
+    #         return df
+        
+    def _sort_data(self, df:pd.DataFrame):
+        """
+        Sort the DataFrame by the date and time in the first column
+        
+        param: df: pd.DataFrame: DataFrame to sort
+        return: pd.DataFrame: Sorted DataFrame
+        """
         if df is None or df.empty or len(df) < 2:
             return df
             
         try:
-            # Convert first column to datetime for proper comparison
-            timestamps = pd.to_datetime(df.iloc[:, 0], format='%Y-%m-%d %H:%M:%S')
-            if timestamps.iloc[0] > timestamps.iloc[1]:
-                return df.iloc[::-1].reset_index(drop=True)
-            return df
+            # Get the first column name
+            first_col = df.columns[0]
+            
+            # Convert to datetime and sort
+            df[first_col] = pd.to_datetime(df[first_col])
+            sorted_df = df.sort_values(by=first_col).reset_index(drop=True)
+            
+            return sorted_df
         except (ValueError, pd.errors.ParserError) as e:
-            print(f"{color.RED}Error parsing timestamps: {str(e)}{color.END}")
-            Log.write(f"Unit {self.unit_no}: Error parsing timestamps: {str(e)}")
-            self.errors.append(f"Unit {self.unit_no}: Error parsing timestamps: {str(e)}")
+            print(f"{color.RED}Error sorting data by timestamp: {str(e)}{color.END}")
+            Log.write(f"Unit {self.unit_no}: Error sorting data by timestamp: {str(e)}")
+            self.errors.append(f"Unit {self.unit_no}: Error sorting data by timestamp: {str(e)}")
             return df
 
     def _natural_sort_key(self, s):
@@ -91,7 +117,7 @@ class Unit:
             response = pd.read_csv(url, header=0, on_bad_lines='skip')
             if response.empty:
                 raise ValueError("Downloaded data is empty")
-            self.data = self._fix_order(response)
+            self.data = self._sort_data(response)
             print(f"Downloaded data for Unit {self.unit_no}")
         except (pd.errors.EmptyDataError, ValueError) as e:
             Log.write(f"Unit {self.unit_no}: Empty data from {url}\n\n")
@@ -124,10 +150,10 @@ class Unit:
                     dir_path = os.path.join(path, dir_name)
                     all_files = [os.path.join(dir_path, f) for f in os.listdir(dir_path) if (os.path.isfile(os.path.join(dir_path, f)) and f.endswith('.csv'))]
                     all_files.sort(key=self._natural_sort_key)
-                    all_files = [self._fix_order(pd.read_csv(f)) for f in all_files]
+                    all_files = [self._sort_data(pd.read_csv(f)) for f in all_files]
                     self.data = pd.concat((f for f in all_files), ignore_index=True)
         else:
-            self.data = self._fix_order(pd.read_csv(path))
+            self.data = self._sort_data(pd.read_csv(path))
         if self.data is None:
             return False
         return True
