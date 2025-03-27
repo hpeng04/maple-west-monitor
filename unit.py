@@ -137,6 +137,12 @@ class Unit:
             Log.record_failed_downloads(self.unit_no, date, url)
             Log.write(f"Unit {self.unit_no}:  Failed download recorded in failed_downloads.txt")
 
+    def _crop_data_columns(self):
+        num_columns = len(self.data.iloc[0]) if len(self.data) > 0 else 0
+        if num_columns > 0:
+            actual_columns = min(num_columns, len(self.data.columns))
+            self.data = self.data.iloc[:, :actual_columns]
+
     def load_data(self, path:str):
         '''
         Load data from a csv file or a directory of csv files
@@ -155,8 +161,9 @@ class Unit:
                         self.data = pd.concat((f for f in all_files), ignore_index=True)
         else:
             self.data = self._sort_data(pd.read_csv(path))
-        if self.data is None:
+        if self.data is None or self.data.empty:
             return False
+        self._crop_data_columns()
         return True
 
     def download_minute_data(self, date=yesterday):

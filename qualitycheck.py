@@ -10,6 +10,7 @@ from openpyxl.formatting.rule import ColorScaleRule
 from openpyxl.utils import get_column_letter
 import calendar
 from unit import Unit
+from rules import check_missing_rows
 
 # portable
 # reusable
@@ -84,10 +85,14 @@ class QualityChecker:
         if not unit.load_data(f'Minute_Data/'):
             print(f'Unit {unit.unit_no} has no data')
             return ((bad_df_daily, missing_df_daily), (bad_df_monthly, missing_df_monthly))
-        data = unit.data
-        unit.data['Date'] = pd.to_datetime(unit.data['Date'])
+        
+        unit.data['Date'] = pd.to_datetime(unit.data['Date'], errors='coerce')
+        unit.data = unit.data.dropna(subset=['Date'])
+        unit.data, _, _, _ = check_missing_rows(unit.data, unit.unit_no)
+        if 'Date' in unit.data.columns:
+            unit.data = unit.data.loc[:, ~unit.data.columns.duplicated()]
         unit.data.set_index('Date', inplace=True)
-        # dates = unit.data.index.to_pydatetime()
+        data = unit.data
         # Group data by date (each group corresponds to one day)
         daily_groups = data.groupby(data.index.date)
         # Extract unique year-month combinations in the format: YYYY-MM
@@ -106,8 +111,9 @@ class QualityChecker:
                     continue
 
                 # Create vectorized masks for bad and missing values
-                bad_mask = (daily_data[channel_name] < min_val) | (daily_data[channel_name] > max_val)
-                missing_mask = daily_data[channel_name].isna() | np.isinf(daily_data[channel_name])
+                col_numeric = pd.to_numeric(daily_data[channel_name], errors='coerce')
+                bad_mask = (col_numeric < min_val) | (col_numeric > max_val)
+                missing_mask = col_numeric.isna() | np.isinf(col_numeric)
                 bad_values = bad_mask.sum()
                 missing_values = missing_mask.sum()
 
@@ -135,8 +141,9 @@ class QualityChecker:
                     continue
 
                 # Create vectorized masks for bad and missing values
-                bad_mask = (monthly_data[channel_name] < min_val) | (monthly_data[channel_name] > max_val)
-                missing_mask = monthly_data[channel_name].isna() | np.isinf(monthly_data[channel_name])
+                col_numeric = pd.to_numeric(monthly_data[channel_name], errors='coerce')
+                bad_mask = (col_numeric < min_val) | (col_numeric > max_val)
+                missing_mask = col_numeric.isna() | np.isinf(col_numeric)
                 bad_values = bad_mask.sum()
                 missing_values = missing_mask.sum()
 
@@ -221,6 +228,6 @@ def main():
 
 if __name__ == "__main__":
     # checker = QualityChecker()
-    # dataframes = checker.check_data_quality(2812)
-    # checker.update_quality_report(2812, dataframes)
+    # dataframes = checker.check_data_quality(77)
+    # checker.update_quality_report(77, dataframes)
     main()

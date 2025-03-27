@@ -113,7 +113,7 @@ def main():
     # download_all() ### Disabled for now until service account has access to Maple West Data shared drive
     # delete_data_folder()
     download_minute(save_files=True)
-    qualitycheck.main()
+    # qualitycheck.main()
     # checker = QualityChecker()
     # checker.create_continuous_quality_report()
     # download_hour()

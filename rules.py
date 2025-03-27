@@ -11,15 +11,24 @@ Unit {unit_no}: {date}, Index {index}: {error_message}
 # Function to increment a given time string by a specified number of minutes
 def increment_time(time: str, minutes: int = 1) -> str:
     time_format = "%Y-%m-%d %H:%M:%S"
-    time_obj = datetime.strptime(time, time_format)
+    if type(time) == str:
+        time_obj = datetime.strptime(time, time_format)
+    else:
+        time_obj = time
     new_time_obj = time_obj + timedelta(minutes=minutes)
-    return str(new_time_obj.strftime(time_format))
+    return new_time_obj
 
 # Function to find the time step between two time strings and log the type of data (minute or hourly)
-def find_time_step(initial_time: str, second_time: str, unit_no) -> int:
+def find_time_step(initial_time, second_time, unit_no) -> int:
     time_format = "%Y-%m-%d %H:%M:%S"
-    initial_time_obj = datetime.strptime(initial_time, time_format)
-    second_time_obj = datetime.strptime(second_time, time_format)
+    if type(initial_time) == str:
+        initial_time_obj = datetime.strptime(initial_time, time_format)
+    else:
+        initial_time_obj = initial_time
+    if type(second_time) == str:
+        second_time_obj = datetime.strptime(second_time, time_format)
+    else:
+        second_time_obj = second_time
     time_diff = second_time_obj - initial_time_obj
     
     # Convert time difference to minutes
@@ -51,61 +60,48 @@ def find_time_step(initial_time: str, second_time: str, unit_no) -> int:
     return time_step
 
 # Function to check for missing rows in a DataFrame and log errors
-def check_missing_rows(data: pd.DataFrame, unit_no) -> pd.DataFrame:
-    if data is None:
-        return None, [], [], []
+def check_missing_rows(data: pd.DataFrame, unit_no):
     errors = []
     warnings = []
-    bad_indices = []
+    bad_indices = []  # you can still track indices/log positions if needed
 
-    first_row = data.iloc[0]
-    num_columns = len(first_row)
+    # Ensure the first column is datetime
+    time_format = "%Y-%m-%d %H:%M:%S"
+    data['Timestamp'] = pd.to_datetime(data.iloc[:, 0], format=time_format, errors='coerce')
+    data = data.dropna(subset=['Timestamp'])
+    data.sort_values('Timestamp', inplace=True)
+    data.set_index('Timestamp', inplace=True)
 
-    initial_time = data.iloc[0, 0]
-    second_row_time = data.iloc[1, 0]
-    time_step = find_time_step(initial_time, second_row_time, unit_no)
+    # Determine expected time-step using the first two entries
+    timestamps = data.index
+    if len(timestamps) < 2:
+        Log.write(f"Unit {unit_no}: Not enough data to determine time step.")
+        return data.reset_index(), errors, warnings, bad_indices
 
-    final_time = data.iloc[-1, 0]
-    
-    index = 0
-    current_time = data.iloc[index, 0].split(" ")[0] + " 00:00:00"
-    expected_time = current_time
+    time_diff = (timestamps[1] - timestamps[0]).total_seconds() / 60
+    time_step = int(time_diff) if time_diff > 0 else 1
 
-    while current_time != final_time:
-        counter = 0
-        expected_time = increment_time(expected_time, time_step)
-        index += 1
-        current_time = data.iloc[index, 0]
+    # Create complete date range with the expected frequency (minutes)
+    full_index = pd.date_range(start=data.index.min(), end=data.index.max(), freq=f'{time_step}min')
 
-        # Check for missing rows and log errors
-        while current_time != expected_time:
-            counter += 1
+    # Find which timestamps are missing
+    missing_timestamps = full_index.difference(data.index)
+    if not missing_timestamps.empty:
+        for ts in missing_timestamps:
+            message = f"Unit {unit_no}: Missing data for timestamp {ts.strftime(time_format)}"
+            Log.write(message)
+            print(f"{color.YELLOW}{message}{color.END}")
+            errors.append(message)  # Or warnings, depending on your logic
+    # Remove duplicate timestamps, keeping the first occurrence
+    data = data[~data.index.duplicated(keep='first')]
+    # Reindex once, which is much more efficient than looping
+    data = data.reindex(full_index)
+    # Optionally, fill missing rows (e.g., with empty strings or NaN)
+    # data = data.fillna("") 
 
-            current_time_obj = datetime.strptime(current_time, "%Y-%m-%d %H:%M:%S")
-            expected_time_obj = datetime.strptime(expected_time, "%Y-%m-%d %H:%M:%S")
-
-            if current_time_obj < expected_time_obj:
-                if time_step != 60:
-                    Log.write(f'Unit {unit_no}: Data order error at index {index}')
-                    print(f"{color.RED}Unit {unit_no}: Data order error at index {index}{color.END}")
-                    errors.append(f"Unit {unit_no}: Data order error at index {index}")
-                    bad_indices.append(index)
-                    expected_time = str(current_time)
-                break
-            
-            if time_step != 60:
-                Log.write(f'Unit {unit_no}: {expected_time} Index {index}: Missing all data')
-            # print(f"{color.RED}Unit {unit_no}: {expected_time} Index {index}: Missing all data{color.END}")
-            if counter > 4:
-                errors.append(f"Unit {unit_no}: {expected_time} Index {index}: Missing all data")
-            else: 
-                warnings.append(f"Unit {unit_no}: {expected_time} Index {index}: Missing all data")
-            bad_indices.append(index)
-            missing_row = [expected_time] + [""] * (num_columns - 1)
-            data = pd.concat([data.iloc[:index], pd.DataFrame([missing_row], columns=data.columns), data.iloc[index:]]).reset_index(drop=True)
-            expected_time = increment_time(expected_time, time_step)
-            index += 1  # Adjust index to account for the inserted row
-
+    # Reset index and rename it to preserve the column name
+    data.reset_index(inplace=True)
+    data.rename(columns={'index': 'Date'}, inplace=True)
     return data, errors, warnings, bad_indices
 
 def check_total_energy(data, unit_no):
