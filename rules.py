@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from log import Log
 import pandas as pd
 from color import color
+import numpy as np
 
 '''
 Log error format:
@@ -121,7 +122,7 @@ def check_total_energy(data, unit_no):
         energy_generated = round(energy_generated, 2)
         energy_consumed = round(energy_consumed, 2)
 
-        diff = energy_generated - energy_consumed
+        diff = np.float64(energy_generated) - np.float64(energy_consumed)
         if energy_generated*1.05 >= energy_consumed or abs(diff) < 10: # 1% tolerance
             pass
         else: # 5% tolerance
