@@ -11,6 +11,12 @@ from openpyxl.utils import get_column_letter
 import calendar
 from unit import Unit
 from rules import check_missing_rows
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    message="This pattern is interpreted as a regular expression, and has match groups.*",
+    category=UserWarning
+)
 
 block_1 = [2804, 2806, 2808, 2810, 2812, 2814, 2816, 2818]
 block_3 = [77, 78, 79, 80, 81, 82, 83, 84, 85, 86]
@@ -54,16 +60,20 @@ class QualityChecker:
             try:
                 with pd.ExcelFile(path) as xls:
                     if 'Daily Bad Values' in xls.sheet_names:
-                        bad_df_daily = pd.read_excel(xls, 'Daily Bad Values', index_col=0, parse_dates=True)
+                        bad_df_daily = pd.read_excel(xls, 'Daily Bad Values', index_col=0)
+                        bad_df_daily.index = pd.to_datetime(bad_df_daily.index, errors='coerce')
                         bad_df_daily.index = bad_df_daily.index.strftime('%Y-%m-%d')
                     if 'Daily Missing Values' in xls.sheet_names:
-                        missing_df_daily = pd.read_excel(xls, 'Daily Missing Values', index_col=0, parse_dates=True)
+                        missing_df_daily = pd.read_excel(xls, 'Daily Missing Values', index_col=0)
+                        missing_df_daily.index = pd.to_datetime(missing_df_daily.index, errors='coerce')
                         missing_df_daily.index = missing_df_daily.index.strftime('%Y-%m-%d')
                     if 'Monthly Bad Values' in xls.sheet_names:
-                        bad_df_monthly = pd.read_excel(xls, 'Monthly Bad Values', index_col=0, parse_dates=True)
+                        bad_df_monthly = pd.read_excel(xls, 'Monthly Bad Values', index_col=0)
+                        bad_df_monthly.index = pd.to_datetime(bad_df_monthly.index, format='%Y-%m', errors='coerce')
                         bad_df_monthly.index = bad_df_monthly.index.strftime('%Y-%m')
                     if 'Monthly Missing Values' in xls.sheet_names:
-                        missing_df_monthly = pd.read_excel(xls, 'Monthly Missing Values', index_col=0, parse_dates=True)
+                        missing_df_monthly = pd.read_excel(xls, 'Monthly Missing Values', index_col=0)
+                        missing_df_monthly.index = pd.to_datetime(missing_df_monthly.index, format='%Y-%m', errors='coerce')
                         missing_df_monthly.index = missing_df_monthly.index.strftime('%Y-%m')
             except Exception as e:
                 print(f"Error reading existing report: {str(e)}")
@@ -94,6 +104,7 @@ class QualityChecker:
         monitored_channels = [channel for channel, key in unit.channels.items() if key == True]
         # Process daily quality checks using vectorized operations
         for date, daily_data in daily_groups:
+            date_str = date.strftime('%Y-%m-%d') 
             for channel in monitored_channels:
                 min_val = channels[channel].min_value
                 max_val = channels[channel].max_value
@@ -112,13 +123,14 @@ class QualityChecker:
                 missing_values = missing_mask.sum()
 
                 # Compute percentage assuming an expected 1440 data points per day
-                bad_df_daily.loc[date, channel] = round(bad_values / 1440 * 100, 3)
-                missing_df_daily.loc[date, channel] = round(missing_values / 1440 * 100, 3)
+                bad_df_daily.loc[date_str, channel] = round(bad_values / 1440 * 100, 3)
+                missing_df_daily.loc[date_str, channel] = round(missing_values / 1440 * 100, 3)
                     
         daily = (bad_df_daily, missing_df_daily)
         for month in unique_months:
             # Filter data for the current month
-            monthly_data = data[data.index.strftime('%Y-%m') == month]
+            month_str = month  # month is already in 'YYYY-MM' format from unique_months
+            monthly_data = data[data.index.strftime('%Y-%m') == month_str]
             # Process data for each enabled channel
             for channel in monitored_channels:
                 min_val = channels[channel].min_value
@@ -142,8 +154,8 @@ class QualityChecker:
                 missing_values = missing_mask.sum()
 
                 # Compute percentage using the expected number of data points
-                bad_df_monthly.loc[month, channel] = round(bad_values / (1440 * num_days) * 100, 3)
-                missing_df_monthly.loc[month, channel] = round(missing_values / (1440 * num_days) * 100, 3)
+                bad_df_monthly.loc[month_str, channel] = round(bad_values / (1440 * num_days) * 100, 3)
+                missing_df_monthly.loc[month_str, channel] = round(missing_values / (1440 * num_days) * 100, 3)
                 monthly = (bad_df_monthly, missing_df_monthly)
         # Add new derived columns to bad_df and missing_df
         for df in [bad_df_monthly, missing_df_monthly]:
@@ -221,7 +233,7 @@ def main():
 
 
 if __name__ == "__main__":
-    # checker = QualityChecker()
-    # dataframes = checker.check_data_quality(77)
-    # checker.update_quality_report(77, dataframes)
-    main()
+    checker = QualityChecker()
+    dataframes = checker.check_data_quality(77)
+    checker.update_quality_report(77, dataframes)
+    # main()
