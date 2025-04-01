@@ -28,7 +28,7 @@ class Unit:
     yesterday = (datetime.now() - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
     last_month = (datetime.today() - relativedelta(months=1)).strftime('%Y-%m')
 
-    def __init__(self, unit_no: int, block: int, ip_address: str, port: str, serial:str, channels:dict, data:pd.DataFrame = None):
+    def __init__(self, unit_no: int = 0, block: int = 0, ip_address: str = "", port: str = "", serial: str = "", channels: dict = None, data: pd.DataFrame = None):
         self.unit_no = unit_no
         self.block = block # Deprecated
         self.data = data
@@ -36,17 +36,6 @@ class Unit:
         self.port = port
         self.serial = serial
         self.channels = channels
-        self.warnings = []
-        self.errors = []
-    
-    def __init__ (self):
-        self.unit_no = 0
-        self.block = 0
-        self.data = None
-        self.ip_address = ""
-        self.port = ""
-        self.serial = ""
-        self.channels = {}
         self.warnings = []
         self.errors = []
                 
