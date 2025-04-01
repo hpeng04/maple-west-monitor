@@ -36,7 +36,7 @@ class QualityChecker:
                     units.append(Unit(unit['unit_no'], unit['block'], unit['ip_address'], unit['port'], unit['serial'], unit['channels']))
         return sorted(units)
 
-    def _get_quality_report(self, unit, path=""):
+    def _load_quality_report(self, unit, path=""):
         '''
         Find the quality report for a specific unit
 
@@ -54,13 +54,17 @@ class QualityChecker:
             try:
                 with pd.ExcelFile(path) as xls:
                     if 'Daily Bad Values' in xls.sheet_names:
-                        bad_df_daily = pd.read_excel(xls, 'Bad Values', index_col=0)
+                        bad_df_daily = pd.read_excel(xls, 'Daily Bad Values', index_col=0, parse_dates=True)
+                        bad_df_daily.index = bad_df_daily.index.strftime('%Y-%m-%d')
                     if 'Daily Missing Values' in xls.sheet_names:
-                        missing_df_daily = pd.read_excel(xls, 'Missing Values', index_col=0)
+                        missing_df_daily = pd.read_excel(xls, 'Daily Missing Values', index_col=0, parse_dates=True)
+                        missing_df_daily.index = missing_df_daily.index.strftime('%Y-%m-%d')
                     if 'Monthly Bad Values' in xls.sheet_names:
-                        bad_df_monthly = pd.read_excel(xls, 'Bad Values', index_col=0)
+                        bad_df_monthly = pd.read_excel(xls, 'Monthly Bad Values', index_col=0, parse_dates=True)
+                        bad_df_monthly.index = bad_df_monthly.index.strftime('%Y-%m')
                     if 'Monthly Missing Values' in xls.sheet_names:
-                        missing_df_monthly = pd.read_excel(xls, 'Missing Values', index_col=0)
+                        missing_df_monthly = pd.read_excel(xls, 'Monthly Missing Values', index_col=0, parse_dates=True)
+                        missing_df_monthly.index = missing_df_monthly.index.strftime('%Y-%m')
             except Exception as e:
                 print(f"Error reading existing report: {str(e)}")
         return (bad_df_daily, missing_df_daily, bad_df_monthly, missing_df_monthly)
@@ -70,7 +74,7 @@ class QualityChecker:
         Check the quality of the data
         '''
         unit = [unit for unit in self.units if unit.unit_no == unit_no][0]
-        bad_df_daily, missing_df_daily, bad_df_monthly, missing_df_monthly = self._get_quality_report(unit)
+        bad_df_daily, missing_df_daily, bad_df_monthly, missing_df_monthly = self._load_quality_report(unit, f'quality_reports/UNIT {unit_no} REPORT.xlsx')
         # Get list of dates from unit.data
         if not unit.load_data(f'Minute_Data/'):
             print(f'Unit {unit.unit_no} has no data')
@@ -217,7 +221,7 @@ def main():
 
 
 if __name__ == "__main__":
-    # checker = QualityChecker()
-    # dataframes = checker.check_data_quality(77)
-    # checker.update_quality_report(77, dataframes)
-    main()
+    checker = QualityChecker()
+    dataframes = checker.check_data_quality(77)
+    checker.update_quality_report(77, dataframes)
+    # main()
