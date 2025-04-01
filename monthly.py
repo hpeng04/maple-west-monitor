@@ -1,25 +1,23 @@
 import os
 import pandas as pd
 import re
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+from google.oauth2 import service_account
 from color import color
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from rules import check_missing_rows
 from alert import alert_failed_downloads
-from main import download_hour
+from daily import download_hour
 import qualitycheck
-from oauth2client.service_account import ServiceAccountCredentials
-
 
 SERVICE_ACCOUNT_JSON = 'service_account.json'
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
-credentials = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_ACCOUNT_JSON, SCOPES)
-gauth = GoogleAuth()
-gauth.credentials = credentials
-drive = GoogleDrive(gauth)
+credentials = service_account.Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_JSON, scopes=SCOPES)
+drive_service = build('drive', 'v3', credentials=credentials)
 
 MINUTE_PATH = './Minute_Data'
 HOUR_PATH = './Hour_Data'
@@ -126,14 +124,31 @@ def upload_combined(combined_path):
                 for file in files:
                     if file.endswith('.csv'):
                         file_path = os.path.join(root, file)
-                        # Check if the file already exists on Google Drive
-                        file_list = drive.ListFile({'q': f"'{locations[dir]}' in parents and trashed=false"}).GetList()
-                        if any(f['title'] == file for f in file_list):
+                        # Check if file already exists
+                        query = f"name='{file}' and '{locations[dir]}' in parents and trashed=false"
+                        results = drive_service.files().list(
+                            q=query,
+                            fields="files(id, name)",
+                            supportsAllDrives=True,
+                            includeItemsFromAllDrives=True
+                        ).execute()
+                        
+                        if results.get('files', []):
                             print(f"{file} already exists in Google Drive folder {locations[dir]} for Unit {unit_no}")
                             continue
-                        gfile = drive.CreateFile({'title': file, 'parents': [{'id': locations[dir]}]})
-                        gfile.SetContentFile(file_path)
-                        gfile.Upload(param={'supportsTeamDrives': True})
+                            
+                        # Upload file
+                        file_metadata = {
+                            'name': file,
+                            'parents': [locations[dir]]
+                        }
+                        media = MediaFileUpload(file_path, resumable=True)
+                        uploaded_file = drive_service.files().create(
+                            body=file_metadata,
+                            media_body=media,
+                            fields='id',
+                            supportsAllDrives=True
+                        ).execute()
                         print(f"Uploaded {file} to Google Drive folder {locations[dir]} for Unit {unit_no}")
 
 def delete_all(paths:list):
@@ -179,6 +194,31 @@ def download_failed(failed_units_path: str):
         f.writelines(new_lines)  # Write back only failed lines
     return
 
+def download_quality_reports():
+    """Download quality reports from Google Drive"""
+    query = f"'{QUALITY_REPORTS_FOLDER}' in parents and trashed=false"
+    results = drive_service.files().list(
+        q=query,
+        fields="files(id, name)",
+        supportsAllDrives=True,
+        includeItemsFromAllDrives=True
+    ).execute()
+    
+    for item in results.get('files', []):
+        file_id = item['id']
+        file_name = item['name']
+        
+        # Download the file
+        request = drive_service.files().get_media(fileId=file_id)
+        file_path = os.path.join(QUALITY_REPORTS_PATH, file_name)
+        
+        with open(file_path, 'wb') as fh:
+            downloader = MediaFileUpload(request, chunksize=2048, resumable=True)
+            done = False
+            while done is False:
+                status, done = downloader.next_chunk()
+                print(f"Downloaded {file_name} {int(status.progress() * 100)}%.")
+
 def upload_quality_reports():
     """Upload quality reports to Google Drive"""
     if not os.path.exists(QUALITY_REPORTS_PATH):
@@ -190,22 +230,40 @@ def upload_quality_reports():
             file_path = os.path.join(QUALITY_REPORTS_PATH, file)
             
             # Check if file already exists in Drive
-            file_list = drive.ListFile({'q': f"'{QUALITY_REPORTS_FOLDER}' in parents and title='{file}'"}).GetList()
-            if file_list:
-                file_list[0].Delete()
-                # print(f"{file} already exists in Google Drive quality reports folder")
-                # continue
+            query = f"name='{file}' and '{QUALITY_REPORTS_FOLDER}' in parents and trashed=false"
+            results = drive_service.files().list(
+                q=query,
+                fields="files(id, name)",
+                supportsAllDrives=True,
+                includeItemsFromAllDrives=True
+            ).execute()
+            
+            # Delete existing file if found
+            for item in results.get('files', []):
+                
+                drive_service.files().delete(
+                    fileId=item['id'],
+                    supportsAllDrives=True
+                ).execute()
+                print(f"Deleted existing file {file} from Google Drive")
 
             # Upload file
-            gfile = drive.CreateFile({'title': file, 'parents': [{'id': QUALITY_REPORTS_FOLDER}]})
-            gfile.SetContentFile(file_path)
-            gfile.Upload(param={'supportsTeamDrives': True})
+            file_metadata = {
+                'name': file,
+                'parents': [QUALITY_REPORTS_FOLDER]
+            }
+            media = MediaFileUpload(file_path, resumable=True)
+            uploaded_file = drive_service.files().create(
+                body=file_metadata,
+                media_body=media,
+                fields='id',
+                supportsAllDrives=True
+            ).execute()
             print(f"Uploaded {file} to Google Drive quality reports folder")
 
 if __name__ == '__main__':
     # download_hour()
     download_failed(FAILED_DOWNLOAD_PATH)
-    qualitycheck.main()
     combine_all(MINUTE_PATH, OUTPUT_PATH)
     # combine_all(HOUR_PATH, OUTPUT_PATH)
     upload_combined(OUTPUT_PATH)
