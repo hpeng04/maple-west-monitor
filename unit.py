@@ -54,7 +54,7 @@ class Unit:
     def __hash__(self):
         return hash(self.unit_no)
 
-    ## Deprecated: Replaced by _sort_data
+    ## Deprecated: Replaced by sort_data
     # def _fix_order(self, df:pd.DataFrame):
     #     '''
     #     Sort the data in ascending order of time if not already sorted
@@ -77,7 +77,7 @@ class Unit:
     #         self.errors.append(f"Unit {self.unit_no}: Error parsing timestamps: {str(e)}")
     #         return df
         
-    def _sort_data(self, df:pd.DataFrame):
+    def sort_data(self, df:pd.DataFrame):
         """
         Sort the DataFrame by the date and time in the first column
         
@@ -117,7 +117,7 @@ class Unit:
             response = pd.read_csv(url, header=0, on_bad_lines='skip')
             if response.empty:
                 raise ValueError("Downloaded data is empty")
-            self.data = self._sort_data(response)
+            self.data = self.sort_data(response)
             print(f"Downloaded data for Unit {self.unit_no}")
         except (pd.errors.EmptyDataError, ValueError) as e:
             Log.write(f"Unit {self.unit_no}: Empty data from {url}\n\n")
@@ -156,11 +156,11 @@ class Unit:
                     dir_path = os.path.join(path, dir_name)
                     all_files = [os.path.join(dir_path, f) for f in os.listdir(dir_path) if (os.path.isfile(os.path.join(dir_path, f)) and f.endswith('.csv'))]
                     all_files.sort(key=self._natural_sort_key)
-                    all_files = [self._sort_data(pd.read_csv(f)) for f in all_files]
+                    all_files = [self.sort_data(pd.read_csv(f)) for f in all_files]
                     if len(all_files) > 0:
                         self.data = pd.concat((f for f in all_files), ignore_index=True)
         else:
-            self.data = self._sort_data(pd.read_csv(path))
+            self.data = self.sort_data(pd.read_csv(path))
         if self.data is None or self.data.empty:
             return False
         self._crop_data_columns()
