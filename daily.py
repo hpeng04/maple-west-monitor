@@ -11,6 +11,7 @@ from color import color
 import pandas as pd
 from download_daily import download_all, delete_data_folder
 import qualitycheck
+from monthly import download_quality_reports
 
 MAX_WARNINGS = 25
 
@@ -113,6 +114,7 @@ def main():
     # download_all() ### Disabled for now until service account has access to Maple West Data shared drive
     # delete_data_folder()
     download_minute(save_files=True)
+    download_quality_reports()
     qualitycheck.main()
     # checker = QualityChecker()
     # checker.create_continuous_quality_report()
