@@ -123,8 +123,8 @@ class QualityChecker:
                 missing_values = missing_mask.sum()
 
                 # Compute percentage assuming an expected 1440 data points per day
-                bad_df_daily.loc[date_str, channel] = round(bad_values / 1440 * 100, 3)
-                missing_df_daily.loc[date_str, channel] = round(missing_values / 1440 * 100, 3)
+                bad_df_daily.loc[date_str, channel] = float(round(bad_values / 1440 * 100, 3))
+                missing_df_daily.loc[date_str, channel] = float(round(missing_values / 1440 * 100, 3))
                     
         daily = (bad_df_daily, missing_df_daily)
         for month in unique_months:
