@@ -91,7 +91,7 @@ def check_missing_rows(data: pd.DataFrame, unit_no):
         for ts in missing_timestamps:
             message = f"Unit {unit_no}: Missing data for timestamp {ts.strftime(time_format)}"
             Log.write(message)
-            print(f"{color.YELLOW}{message}{color.END}")
+            # print(f"{color.YELLOW}{message}{color.END}")
             errors.append(message)  # Or warnings, depending on your logic
     # Remove duplicate timestamps, keeping the first occurrence
     data = data[~data.index.duplicated(keep='first')]
