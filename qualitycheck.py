@@ -128,18 +128,21 @@ class QualityChecker:
                     
         daily = (bad_df_daily, missing_df_daily)
         for month in unique_months:
+            year = int(month.split('-')[0])
+            month_num = int(month.split('-')[1])
+
+            num_days = calendar.monthrange(year, month_num)[1]
+            actual_num_days = len(missing_df_daily[missing_df_daily.index.str.startswith(month)])
+            missing_num_days = num_days - actual_num_days
             # Filter data for the current month
             month_str = month  # month is already in 'YYYY-MM' format from unique_months
             monthly_data = data[data.index.strftime('%Y-%m') == month_str]
+
             # Process data for each enabled channel
             for channel in monitored_channels:
                 min_val = channels[channel].min_value
                 max_val = channels[channel].max_value
-                # Extract year and month from the 'YYYY-MM' format
-                year = int(month.split('-')[0])
-                month_num = int(month.split('-')[1])
-                # Get number of days in the month
-                num_days = calendar.monthrange(year, month_num)[1]
+
                 # Find the column matching the channel regex
                 matching_cols = data.columns[data.columns.str.contains(channels[channel].regex, regex=True)]
                 channel_name = matching_cols[0] if len(matching_cols) > 0 else None
@@ -154,8 +157,8 @@ class QualityChecker:
                 missing_values = missing_mask.sum()
 
                 # Compute percentage using the expected number of data points
-                bad_df_monthly.loc[month_str, channel] = round(bad_values / (1440 * num_days) * 100, 3)
-                missing_df_monthly.loc[month_str, channel] = round(missing_values / (1440 * num_days) * 100, 3)
+                bad_df_monthly.loc[month_str, channel] = float(round((bad_values + 1440 * missing_num_days)/ (1440 * num_days) * 100, 3))
+                missing_df_monthly.loc[month_str, channel] = float(round((missing_values + 1440 * missing_num_days) / (1440 * num_days) * 100, 3))
                 monthly = (bad_df_monthly, missing_df_monthly)
         # Add new derived columns to bad_df and missing_df
         for df in [bad_df_monthly, missing_df_monthly]:
