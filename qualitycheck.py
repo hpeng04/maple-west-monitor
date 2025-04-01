@@ -12,16 +12,6 @@ import calendar
 from unit import Unit
 from rules import check_missing_rows
 
-# portable
-# reusable
-# maintainable
-# testable
-# goal of this program is to take one file and check the quality of the data
-# for checking directories, another program should be used to sort and combine the files
-# this program should take in one file and the unit config
-# it should then analyze the enabled channels and check for missing data
-# it should then output a report of the quality of the data
-
 block_1 = [2804, 2806, 2808, 2810, 2812, 2814, 2816, 2818]
 block_3 = [77, 78, 79, 80, 81, 82, 83, 84, 85, 86]
 
@@ -201,9 +191,9 @@ class QualityChecker:
         Update the quality report with the new data
         '''
         daily, monthly = dataframes
-        if not os.path.exists(f'reports/UNIT {unit_no}'):
-            os.makedirs(f'reports/UNIT {unit_no}')
-        path = f'reports/UNIT {unit_no}/UNIT {unit_no} REPORT.xlsx'
+        if not os.path.exists(f'quality_reports/'):
+            os.makedirs(f'quality_reports/')
+        path = f'quality_reports/UNIT {unit_no} REPORT.xlsx'
         with pd.ExcelWriter(path) as writer:
             bad_df_daily, missing_df_daily = daily
             bad_df_daily.to_excel(writer, sheet_name='Daily Bad Values')
