@@ -221,7 +221,7 @@ def main():
 
 
 if __name__ == "__main__":
-    checker = QualityChecker()
-    dataframes = checker.check_data_quality(77)
-    checker.update_quality_report(77, dataframes)
-    # main()
+    # checker = QualityChecker()
+    # dataframes = checker.check_data_quality(77)
+    # checker.update_quality_report(77, dataframes)
+    main()
