@@ -38,6 +38,17 @@ class Unit:
         self.channels = channels
         self.warnings = []
         self.errors = []
+    
+    def __init__ (self):
+        self.unit_no = 0
+        self.block = 0
+        self.data = None
+        self.ip_address = ""
+        self.port = ""
+        self.serial = ""
+        self.channels = {}
+        self.warnings = []
+        self.errors = []
                 
     def __str__(self):
         return f"Unit {self.unit_no}"
