@@ -3,14 +3,14 @@ import pandas as pd
 import re
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from googleapiclient.http import MediaIoBaseDownload
+from io import BytesIO
 from google.oauth2 import service_account
 from color import color
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from rules import check_missing_rows
 from alert import alert_failed_downloads
-from daily import download_hour
-import qualitycheck
 
 SERVICE_ACCOUNT_JSON = 'service_account.json'
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -213,7 +213,7 @@ def download_quality_reports():
         file_path = os.path.join(QUALITY_REPORTS_PATH, file_name)
         
         with open(file_path, 'wb') as fh:
-            downloader = MediaFileUpload(request, chunksize=2048, resumable=True)
+            downloader = MediaIoBaseDownload(fh, request)
             done = False
             while done is False:
                 status, done = downloader.next_chunk()
@@ -262,10 +262,8 @@ def upload_quality_reports():
             print(f"Uploaded {file} to Google Drive quality reports folder")
 
 if __name__ == '__main__':
-    # download_hour()
     download_failed(FAILED_DOWNLOAD_PATH)
     combine_all(MINUTE_PATH, OUTPUT_PATH)
-    # combine_all(HOUR_PATH, OUTPUT_PATH)
     upload_combined(OUTPUT_PATH)
     upload_quality_reports()
     delete_all([MINUTE_PATH, HOUR_PATH, OUTPUT_PATH])

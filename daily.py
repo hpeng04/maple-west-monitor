@@ -116,9 +116,6 @@ def main():
     download_minute(save_files=True)
     download_quality_reports()
     qualitycheck.main()
-    # checker = QualityChecker()
-    # checker.create_continuous_quality_report()
-    # download_hour()
 
 if __name__ == "__main__":
     main()
