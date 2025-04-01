@@ -1,3 +1,10 @@
+IP
+localhost
 PORTS
 10000 webmin
 8081 vscode
+
+steps to connect:
+1. connect to ualberta vpn
+2. ssh -L PORT:localhost:PORT enggid@idobe.engineering.ualberta.ca
+3. enter password
