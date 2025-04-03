@@ -133,9 +133,11 @@ class QualityChecker:
 
             num_days = calendar.monthrange(year, month_num)[1]
             days_list = missing_df_daily.index.str.startswith(month)
-            for day in range(len(days_list)):
-                if missing_df_daily.iloc[day].sum() == 0:
-                    days_list[day] = False
+            # lot more missing in monthly than daily idk why need fix
+            # for day in range(len(days_list)):
+            #     days_list[day] = False
+            #     if missing_df_daily.iloc[day].sum() != 0:
+            #         days_list[day] = False
             actual_num_days = len(missing_df_daily[days_list])
             missing_num_days = num_days - actual_num_days
             # Filter data for the current month
@@ -162,7 +164,7 @@ class QualityChecker:
                 missing_values = missing_mask.sum()
 
                 # Compute percentage using the expected number of data points
-                bad_df_monthly.loc[month_str, channel] = float(round((float(bad_values) + 1440 * missing_num_days)/ (1440 * num_days) * 100, 3))
+                bad_df_monthly.loc[month_str, channel] = float(round((float(bad_values))/ (1440 * num_days) * 100, 3))
                 missing_df_monthly.loc[month_str, channel] = float(round((float(missing_values) + 1440 * missing_num_days) / (1440 * num_days) * 100, 3))
                 monthly = (bad_df_monthly, missing_df_monthly)
                 if month_str == '2023-10':
