@@ -97,6 +97,7 @@ class QualityChecker:
             unit.data = unit.data.loc[:, ~unit.data.columns.duplicated()]
         unit.data.set_index('Date', inplace=True)
         data = unit.data
+        data = data.sort_index()
         # Group data by date (each group corresponds to one day)
         daily_groups = data.groupby(data.index.date)
         # Extract unique year-month combinations in the format: YYYY-MM
@@ -132,14 +133,10 @@ class QualityChecker:
             month_num = int(month.split('-')[1])
 
             num_days = calendar.monthrange(year, month_num)[1]
-            days_list = missing_df_daily.index.str.startswith(month)
-            # lot more missing in monthly than daily idk why need fix
-            # for day in range(len(days_list)):
-            #     days_list[day] = False
-            #     if missing_df_daily.iloc[day].sum() != 0:
-            #         days_list[day] = False
-            actual_num_days = len(missing_df_daily[days_list])
-            missing_num_days = num_days - actual_num_days
+            # days_list = missing_df_daily.index.str.startswith(month)
+            # actual_num_days = len(missing_df_daily[days_list])
+            # missing_num_days = num_days - actual_num_days
+            expected_num_points = 1440*num_days
             # Filter data for the current month
             month_str = month  # month is already in 'YYYY-MM' format from unique_months
             monthly_data = data[data.index.strftime('%Y-%m') == month_str]
@@ -164,11 +161,12 @@ class QualityChecker:
                 missing_values = missing_mask.sum()
 
                 # Compute percentage using the expected number of data points
-                bad_df_monthly.loc[month_str, channel] = float(round((float(bad_values))/ (1440 * num_days) * 100, 3))
-                missing_df_monthly.loc[month_str, channel] = float(round((float(missing_values) + 1440 * missing_num_days) / (1440 * num_days) * 100, 3))
+                bad_df_monthly.loc[month_str, channel] = float(round((bad_values)/ (expected_num_points) * 100, 3))
+                missing_num_points = (missing_values + expected_num_points - len(col_numeric))
+                missing_df_monthly.loc[month_str, channel] = float(round(missing_num_points/ (expected_num_points) * 100, 3))
                 monthly = (bad_df_monthly, missing_df_monthly)
-                if month_str == '2023-10':
-                    pass
+                if month_str == '2025-03':
+                        pass
         # Add new derived columns to bad_df and missing_df
         for df in [bad_df_monthly, missing_df_monthly]:
             # Sum Main Electricity 1 & 2 with percentage calculation
@@ -246,6 +244,6 @@ def main():
 
 if __name__ == "__main__":
     # checker = QualityChecker()
-    # dataframes = checker.check_data_quality(77)
-    # checker.update_quality_report(77, dataframes)
+    # dataframes = checker.check_data_quality(2812)
+    # checker.update_quality_report(2812, dataframes)
     main()
