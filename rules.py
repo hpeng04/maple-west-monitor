@@ -79,8 +79,8 @@ def check_missing_rows(data: pd.DataFrame, unit_no):
         Log.write(f"Unit {unit_no}: Not enough data to determine time step.")
         return data.reset_index(), errors, warnings, bad_indices
 
-    time_diff = (timestamps[1] - timestamps[0]).total_seconds() / 60
-    time_step = int(time_diff) if time_diff > 0 else 1
+    # time_diff = (timestamps[1] - timestamps[0]).total_seconds() / 60
+    time_step = find_time_step(timestamps[0], timestamps[1], unit_no)
 
     # Create complete date range with the expected frequency (minutes)
     full_index = pd.date_range(start=data.index.min(), end=data.index.max(), freq=f'{time_step}min')
