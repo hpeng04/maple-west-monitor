@@ -165,8 +165,6 @@ class QualityChecker:
                 missing_num_points = (missing_values + expected_num_points - len(col_numeric))
                 missing_df_monthly.loc[month_str, channel] = float(round(missing_num_points/ (expected_num_points) * 100, 3))
                 monthly = (bad_df_monthly, missing_df_monthly)
-                if month_str == '2025-03':
-                        pass
         # Add new derived columns to bad_df and missing_df
         for df in [bad_df_monthly, missing_df_monthly]:
             # Sum Main Electricity 1 & 2 with percentage calculation
@@ -235,6 +233,43 @@ class QualityChecker:
 
         return
     
+    def combine_quality_reports(self, unit_path):
+        '''
+        Combine the quality reports into one file
+        '''
+        elec_df = pd.DataFrame()
+        gas_df = pd.DataFrame()
+        
+        for unit in self.units:
+            unit_no = unit.unit_no
+            path = f'{unit_path}/UNIT {unit_no} REPORT.xlsx'
+            if os.path.exists(path):
+                try:
+                    with pd.ExcelFile(path) as xls:
+                        if 'Monthly Missing Values' in xls.sheet_names:
+                            df = pd.read_excel(xls, 'Monthly Missing Values', index_col=0)
+                            elec = df['Total Electricity']
+                            elec_df[unit_no] = elec
+                            try:
+                                gas = df['Gas']
+                                gas_df[unit_no] = gas
+                            except:
+                                continue
+                except Exception as e:
+                    print(f"Error reading report for unit {unit_no}: {str(e)}")
+        # Align all DataFrames to a common index (union of all dates)
+        # combined_index = elec_df.index.union(gas_df.index)
+        # elec_df = elec_df.reindex(combined_index, fill_value=100)
+        # gas_df = gas_df.reindex(combined_index, fill_value=100)
+        # Save combined reports
+        save_path = f'{unit_path}/Combined Quality Report.xlsx'
+        with pd.ExcelWriter(save_path) as writer:
+            elec_df.to_excel(writer, sheet_name='Monthly Electricity')
+            gas_df.to_excel(writer, sheet_name='Monthly Gas')
+        self._format_quality_result(save_path)
+        print(f'Combined quality reports saved to {unit_path}')
+        return
+                    
 def main():
     checker = QualityChecker()
     for unit in block_1+block_3:
@@ -244,6 +279,7 @@ def main():
 
 if __name__ == "__main__":
     # checker = QualityChecker()
-    # dataframes = checker.check_data_quality(2812)
-    # checker.update_quality_report(2812, dataframes)
+    # dataframes = checker.check_data_quality(2806)
+    # checker.update_quality_report(2806, dataframes)
+    # checker.combine_quality_reports('quality_reports')
     main()
