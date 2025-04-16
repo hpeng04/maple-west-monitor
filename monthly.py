@@ -11,6 +11,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from rules import check_missing_rows
 from alert import alert_failed_downloads
+import qualitycheck
 
 SERVICE_ACCOUNT_JSON = 'service_account.json'
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -264,6 +265,7 @@ def upload_quality_reports():
 if __name__ == '__main__':
     download_failed(FAILED_DOWNLOAD_PATH)
     combine_all(MINUTE_PATH, OUTPUT_PATH)
+    qualitycheck.main()
     upload_combined(OUTPUT_PATH)
     upload_quality_reports()
     delete_all([MINUTE_PATH, HOUR_PATH, OUTPUT_PATH])

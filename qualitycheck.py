@@ -11,6 +11,7 @@ from openpyxl.utils import get_column_letter
 import calendar
 from unit import Unit
 from rules import check_missing_rows
+from monthly import download_quality_reports
 import warnings
 warnings.filterwarnings(
     "ignore",
@@ -271,6 +272,7 @@ class QualityChecker:
         return
                     
 def main():
+    download_quality_reports()
     checker = QualityChecker()
     for unit in block_1+block_3:
         dataframes = checker.check_data_quality(unit)
