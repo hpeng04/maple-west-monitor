@@ -265,6 +265,7 @@ def upload_quality_reports():
 if __name__ == '__main__':
     download_failed(FAILED_DOWNLOAD_PATH)
     combine_all(MINUTE_PATH, OUTPUT_PATH)
+    download_quality_reports()
     qualitycheck.main()
     upload_combined(OUTPUT_PATH)
     upload_quality_reports()

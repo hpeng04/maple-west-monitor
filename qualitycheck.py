@@ -11,7 +11,6 @@ from openpyxl.utils import get_column_letter
 import calendar
 from unit import Unit
 from rules import check_missing_rows
-from monthly import download_quality_reports
 import warnings
 warnings.filterwarnings(
     "ignore",
@@ -176,6 +175,11 @@ class QualityChecker:
             # Copy Natural Gas column
             if 'Natural Gas' in df.columns:
                 df['Gas'] = df['Natural Gas']
+            
+            temp_cols = df.columns[df.columns.str.contains('Avg\\s*C$', regex=True)]
+            df['Temperature'] = df[temp_cols].mean(axis=1)
+            pulse_cols = df.columns[df.columns.str.contains('Cubic', regex=True)]
+            df['Pulse'] = df[pulse_cols].mean(axis=1)
 
         return (daily, monthly)
 
@@ -272,7 +276,6 @@ class QualityChecker:
         return
                     
 def main():
-    download_quality_reports()
     checker = QualityChecker()
     for unit in block_1+block_3:
         dataframes = checker.check_data_quality(unit)
