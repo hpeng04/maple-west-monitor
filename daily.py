@@ -50,7 +50,7 @@ def compile_email_body(units):
             error_units.add(unit)
         
     for unit in error_units:
-        body += f"{unit}, https://{unit.ip_address}:{unit.port}\n"
+        body += f"{unit}, {unit.ip_address}:{unit.port}\n"
     return body
 
 def run_load_units():
