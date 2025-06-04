@@ -9,7 +9,7 @@ import json
 import datetime
 from color import color
 
-MAX_WARNINGS = 25
+MAX_WARNINGS = 50
 
 def load_units(config_path: str) -> list[Unit]:
     '''
@@ -50,7 +50,14 @@ def compile_email_body(units):
             error_units.add(unit)
         
     for unit in error_units:
-        body += f"{unit}, {unit.ip_address}:{unit.port}\n"
+        print(str(unit.errors + unit.warnings))
+        errors = {
+            "Temperature": "Avg C" in str(unit.errors + unit.warnings),
+            "Voltage": "Volts" in str(unit.errors + unit.warnings),
+            "Pulse": "Cubic" in str(unit.errors + unit.warnings) or "Gas" in str(unit.errors + unit.warnings),
+            "Power": "Watts" in str(unit.errors + unit.warnings)
+        }
+        body += f"{unit} errors: {[k for k,v in errors.items() if v == True]}, {unit.ip_address}:{unit.port}\n"
     return body
 
 def run_load_units():
