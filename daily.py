@@ -57,7 +57,7 @@ def compile_email_body(units):
             "Pulse": "Cubic" in str(unit.errors + unit.warnings) or "Gas" in str(unit.errors + unit.warnings),
             "Power": "Watts" in str(unit.errors + unit.warnings)
         }
-        body += f"{unit} errors: ({len(unit.errors) + unit.warnings}) {[k for k,v in errors.items() if v == True]}, {unit.ip_address}:{unit.port}\n"
+        body += f"{unit} errors: ({len(unit.errors) + len(unit.warnings)}) {[k for k,v in errors.items() if v == True]}, {unit.ip_address}:{unit.port}\n"
     return body
 
 def run_load_units():
