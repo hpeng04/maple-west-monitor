@@ -171,7 +171,7 @@ class Unit:
         Download data for the last day (minute data)
         '''
         # date in YYYY-MM-DD format
-        url = f'{self.ip_address}:{self.port}/index.php/pages/export/exportDaily/{self.serial}/{date}'
+        url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportDaily/{self.serial}/{date}'
         self.datatype = "Minute"
         self._download(url)
 
@@ -181,7 +181,7 @@ class Unit:
         
         param: date: str: date in YYYY-MM format
         '''
-        url = f'{self.ip_address}:{self.port}/index.php/pages/export/exportMonthly/{self.serial}/{date}'
+        url = f'http://{self.ip_address}:{self.port}/index.php/pages/export/exportMonthly/{self.serial}/{date}'
         self.datatype = "Hour"
         self._download(url)
 
@@ -189,7 +189,7 @@ class Unit:
         '''
         Check the space available on the sd card
         '''
-        url = f'{self.ip_address}:{self.port}/index.php/powerdisplay/getmainwatts'
+        url = f'http://{self.ip_address}:{self.port}/index.php/powerdisplay/getmainwatts'
         try:
             page = urlopen(url)
             html_bytes = page.read()
@@ -217,7 +217,7 @@ class Unit:
         '''
         Check the status of the dashbox
         '''
-        url = f'{self.ip_address}:{self.port}/index.php/powerdisplay/getmainwatts'
+        url = f'http://{self.ip_address}:{self.port}/index.php/powerdisplay/getmainwatts'
         body = f"Unit {self.unit_no}: Dashbox Status Error\n\n{self.ip_address}:{self.port}"
         try:
             page = urlopen(url)
