@@ -55,7 +55,8 @@ def compile_email_body(units):
             "Temperature": "Avg C" in str(unit.errors + unit.warnings),
             "Voltage": "Volts" in str(unit.errors + unit.warnings),
             "Pulse": "Cubic" in str(unit.errors + unit.warnings) or "Gas" in str(unit.errors + unit.warnings),
-            "Power": "Watts" in str(unit.errors + unit.warnings)
+            "Power": "Watts" in str(unit.errors + unit.warnings),
+            "Energy": "Energy" in str(unit.errors + unit.warnings)
         }
         body += f"{unit} errors: ({len(unit.errors) + len(unit.warnings)}) {[k for k,v in errors.items() if v == True]}, {unit.ip_address}:{unit.port}\n"
     return body
